@@ -1,0 +1,3 @@
+// ERROR: a distinct type does not mix with its base (spec/02-types §3.1)
+type Distance = distinct u32;
+fn f(a: Distance, b: u32) -> Distance { return a + b; }

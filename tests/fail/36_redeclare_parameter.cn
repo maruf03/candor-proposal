@@ -1,0 +1,2 @@
+// ERROR: a parameter and a let in the function block share one scope (spec/03-memory §5)
+fn f(x: i32) { let x: i32 = 2; }

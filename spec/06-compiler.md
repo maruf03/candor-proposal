@@ -37,7 +37,7 @@ Small by design, because nothing tracks ownership or aliasing (`spec/03-memory.m
 
 | Candor | C |
 | :--- | :--- |
-| `i32`, `u64`, ... | `int32_t`, `uint64_t`, ... |
+| `i32`, `u64`, ... | `int32_t`, `uint64_t`, ... (`distinct` types lower as their base) |
 | `+ - *` | `__builtin_add_overflow` family; on overflow `__builtin_trap()` |
 | `wrapping_*` | operands are cast explicitly to `uint32_t` (types of 32 bits or fewer) or `uint64_t`, the operation is done there, and the result is truncated back. C's integer promotion would otherwise turn two `uint16_t` into signed `int` and overflow (`65535 * 65535`) |
 | any arithmetic on types narrower than 32 bits | done in `int32_t`/`uint32_t` with explicit truncation of the result, never relying on C promotion |

@@ -46,7 +46,7 @@ Primitive and compound types, conversions, arithmetic, pointers and slices, enum
 | `T*` | `const T*` |
 | `null` | any pointer type |
 
-**`x as T`** is the only explicit conversion:
+**`x as T`** is the only explicit conversion (`distinct` types have their own operation rules in §3.1):
 
 | Conversion | Behavior |
 | :--- | :--- |
@@ -58,9 +58,29 @@ Primitive and compound types, conversions, arithmetic, pointers and slices, enum
 | integer to `bool` | not allowed (write `x != 0`) |
 | enum to integer | the variant's value |
 | integer to enum | allowed; an exhaustive `switch` over an out-of-range value aborts (§5) |
-| `distinct` type to or from its base | free; other conversions go through the base type's rules |
+| `distinct` type to or from its base | free (zero cost); other conversions go through the base type's rules |
 | pointer to pointer, pointer to integer, integer to pointer | allowed, no check: the address is reinterpreted |
 | `const T*` to `T*` | allowed (like a C cast); writing through it is the programmer's problem |
+
+### 3.1 `distinct` types
+
+`type Distance = distinct u32;` makes a new type with the same representation as its base (`u32`) that is **not interchangeable** with it: a `Distance` and a `u32` (or two different distinct types over `u32`) never mix without a cast. A plain alias (`type Name = T;`) is the same type as `T`.
+
+A `distinct` type **inherits the operations of its base**, applied to operands of the *same* distinct type:
+
+| Operation | Allowed on `Distance` | Result |
+| :--- | :--- | :--- |
+| `+ - * / %`, unary `-`, `& \| ^ ~` | yes, with the base's rules (overflow aborts, division checks) | `Distance` |
+| `<< >>` | yes; the shift amount may be `Distance` or `u32` | `Distance` |
+| `== != < <= > >=` | yes | `bool` |
+| `wrapping_add/sub/mul` | yes | `Distance` |
+| indexing a slice or array, `slice` lengths, slice bounds | **no**: these require exactly `usize`; write `d as usize` | |
+| mixing with the base or another distinct type: `d + 5_u32`, `d == other` | **no**: type error; cast one side | |
+
+- **Literals** initialize a `distinct` integer or float type directly (`let d: Distance = 5;`, `d + 1`, `d < 100`) when the value fits the base type.
+- A `distinct` type over a pointer, struct, enum or function pointer inherits that base's operations (`==`/`!=` where the base has them, field access, dereference, calls) and nothing else; it is not an integer, so none of the arithmetic rows apply. Dereference and field access yield the base's own result types (they do not become distinct).
+- **Generics:** instantiation is by exact type, so `Vec[Distance]` and `Vec[u32]` are different types, and a generic body is checked per instantiation (§6): `a + b` in a body compiles for `T = Distance` because `Distance` supports `+`.
+- The lowering is the base type's lowering; `distinct` is erased (`spec/06-compiler.md` §4).
 
 ---
 

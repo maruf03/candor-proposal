@@ -76,6 +76,12 @@ defer close(fd);              // not reached on the path above
 
 Every `let`/`mut` binding has an initializer; every struct literal names every field. There is no zero-fill, so there is nothing for a zero value to mean. Arrays are initialized with `[v; n]` or `[a, b, c]`. Memory from `malloc` is uninitialized, as in C; reading it before writing is your bug.
 
+**Scope of a binding.** A `let`/`mut` binding enters scope **after** its initializer has been evaluated, not at the declaration's first token. Inside the initializer, the name still refers to whatever it referred to before (an outer variable, a parameter, a module item), or is an undefined-name error if there is none. So `let x: i32 = x;` copies the outer `x`, and with no outer `x` it is rejected; the new `x` can never be read before it holds a value. Rules that go with it:
+
+- Declaring a name already declared **in the same block** (parameters count as the function's outermost block) is an error.
+- A nested block, a `for` variable, or a `case` body may **shadow** an outer name; the outer binding is visible again after the block.
+- A `for` variable is in scope in the loop body only; `defer` bodies resolve names at the point of the `defer`.
+
 ---
 
 ## 6. Obligations on a Conforming Compiler

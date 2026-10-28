@@ -1,0 +1,2 @@
+// ERROR: name already declared in this block (spec/03-memory §5)
+fn f() { let x: i32 = 1; let x: i32 = 2; }

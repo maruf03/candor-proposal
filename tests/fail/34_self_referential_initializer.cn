@@ -1,0 +1,2 @@
+// ERROR: a binding is not in scope in its own initializer (spec/03-memory §5)
+fn f() { let x: i32 = x; }

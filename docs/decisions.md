@@ -43,6 +43,9 @@ History: the first specification (commit `3c61f4f`) was a memory-safe design wit
 
 ## Types and Arithmetic
 
+### D-08b: Binding scope and `distinct` operations
+**Fixes from an independent review.** A binding enters scope after its initializer, so mandatory initialization cannot be bypassed by `let x = x;` (`spec/03-memory.md` §5). A `distinct` type inherits its base's operators for operands of the same distinct type, accepts literals, never mixes with the base, and does not index slices (`spec/02-types.md` §3.1). *Taste call* on literals and inherited operators: the alternative (every operation needs casts) makes typed indices unusable.
+
 ### D-09: Arithmetic is defined
 **Approved (carried over).** `+ - *` abort on overflow in every build; `wrapping_add/sub/mul` wrap. `/ %` abort on zero and `MIN / -1`. Shifts mask the amount; `<<` acts on the bit pattern. Float to int saturates. Evaluation is left to right. The C lowering uses explicit widening and temporaries to deliver these (`spec/06-compiler.md` §4); independent reviews found holes in the first plans (signed shifts, argument order, C integer promotion, values read before a later side effect, `NULL + 0` when slicing an empty slice).
 - *Cost:* an overflow check on every `+`. Use `wrapping_*` where it matters.
