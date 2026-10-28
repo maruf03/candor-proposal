@@ -1,0 +1,64 @@
+// Litmus 4: TCP echo server (blocking, single thread). Tests: extern "C" FFI,
+// linear file descriptors, errdefer/defer, nullable pointers at the C boundary,
+// error unions that never cross into C. Calls to extern fns require `unsafe`
+// unless the declaration is marked [safe] (legal only for non-pointer scalar signatures).
+extern "C" {
+    [safe] fn socket(domain: i32, kind: i32, proto: i32) -> i32;
+    [safe] fn listen(fd: i32, backlog: i32) -> i32;
+    fn close(fd: i32) -> i32;          // not [safe]: could close a descriptor owned by a linear Fd
+    fn bind(fd: i32, addr: const u8*, len: u32) -> i32;
+    fn accept(fd: i32, addr: ?u8*, len: ?u32*) -> i32;
+    fn read(fd: i32, buf: u8*, n: usize) -> isize;
+    fn send(fd: i32, buf: const u8*, n: usize, flags: i32) -> isize;
+}
+
+pub enum NetError : i32 { Socket = 1, Bind = 2, Listen = 3, Accept = 4, Io = 5 }
+
+pub linear struct Fd { raw: i32; }
+
+impl Fd {
+    fn wrap(raw: i32, err: NetError) -> Result[Fd, NetError] {
+        if (raw < 0) { return err; }
+        return Fd{ raw: raw };
+    }
+    pub fn close(self: Fd) {
+        let Fd{ raw } = self;
+        unsafe { close(raw); }
+    }
+    pub fn read_some(self: &const Fd, buf: u8[]) -> Result[usize, NetError] {
+        mut n: isize = 0;
+        unsafe { n = read(self.raw, buf.ptr, buf.len); }
+        if (n < 0) { return NetError.Io; }
+        return n as usize;
+    }
+    pub fn write_all(self: &const Fd, buf: const u8[]) -> Result[void, NetError] {
+        mut off: usize = 0;
+        while (off < buf.len) {
+            mut n: isize = 0;
+            unsafe { n = send(self.raw, buf.ptr + off, buf.len - off, 0x4000); }   // MSG_NOSIGNAL (Linux): no SIGPIPE on closed peer
+            if (n <= 0) { return NetError.Io; }
+            off += n as usize;
+        }
+    }
+}
+
+pub fn serve(sockaddr: const u8[]) -> Result[void, NetError] {
+    let srv = try Fd.wrap(socket(2, 1, 0), NetError.Socket);
+    defer srv.close();
+    mut rc: i32 = 0;
+    unsafe { rc = bind(srv.raw, sockaddr.ptr, sockaddr.len as u32); }
+    if (rc < 0) { return NetError.Bind; }
+    if (listen(srv.raw, 128) < 0) { return NetError.Listen; }
+    while (true) {                                  // no `break`: loop diverges
+        mut raw: i32 = -1;
+        unsafe { raw = accept(srv.raw, null, null); }
+        let conn = try Fd.wrap(raw, NetError.Accept);
+        defer conn.close();                         // runs at end of every iteration
+        mut buf: u8[4096] = zeroed(u8[4096]);
+        mut n = try conn.read_some(buf[..]);
+        while (n > 0) {
+            try conn.write_all(buf[0..n]);          // u8[] -> const u8[] weakening is implicit
+            n = try conn.read_some(buf[..]);
+        }
+    }
+}

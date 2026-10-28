@@ -1,0 +1,59 @@
+// Litmus 2: tokenizer. Tests: "view into input" pattern without stored slices.
+// Tokens hold INDICES, never slices; the source is passed to each call.
+pub enum Kind : u8 { Eof = 0, Ident = 1, Number = 2, Plus = 3, Star = 4, LParen = 5, RParen = 6, Bad = 7 }
+
+pub struct Token { kind: Kind; start: u32; end: u32; }
+
+pub struct Lexer { pos: usize; }          // no `src` field: slices cannot be stored
+
+fn is_alpha(c: u8) -> bool { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'; }
+fn is_digit(c: u8) -> bool { return c >= '0' && c <= '9'; }
+
+impl Lexer {
+    pub fn next(self: &mut Lexer, src: const u8[]) -> Token {
+        while (self.pos < src.len && src[self.pos] == ' ') { self.pos += 1; }
+        if (self.pos >= src.len) { return Token{ kind: Kind.Eof, start: self.pos as u32, end: self.pos as u32 }; }
+        let start = self.pos;
+        let c = src[start];
+        self.pos += 1;
+        if (is_alpha(c)) {
+            while (self.pos < src.len && (is_alpha(src[self.pos]) || is_digit(src[self.pos]))) { self.pos += 1; }
+            return Token{ kind: Kind.Ident, start: start as u32, end: self.pos as u32 };
+        }
+        if (is_digit(c)) {
+            while (self.pos < src.len && is_digit(src[self.pos])) { self.pos += 1; }
+            return Token{ kind: Kind.Number, start: start as u32, end: self.pos as u32 };
+        }
+        mut k = Kind.Bad;
+        switch (c) {
+            case '+': { k = Kind.Plus; }
+            case '*': { k = Kind.Star; }
+            case '(': { k = Kind.LParen; }
+            case ')': { k = Kind.RParen; }
+            else: { }
+        }
+        return Token{ kind: k, start: start as u32, end: self.pos as u32 };
+    }
+}
+
+// Text of a token: one borrowed param (`src`) => result borrows from it (elision).
+pub fn text(src: const u8[], t: Token) -> const u8[] {
+    return src[t.start as usize..t.end as usize];
+}
+
+// A struct with a borrowed field is itself "borrowing" (second-class): it may live in
+// locals and params only, never be stored in a non-borrowing struct or returned
+// (except via single-source elision). This is what lets a parser bundle its context.
+pub struct Cursor { src: const u8[]; lex: Lexer; }
+
+impl Cursor {
+    pub fn next(self: &mut Cursor) -> Token { return self.lex.next(self.src); }
+}
+
+pub fn count_tokens(src: const u8[]) -> usize {
+    mut cur = Cursor{ src: src, lex: Lexer{ pos: 0 } };   // `cur` borrows `src` while live
+    mut n: usize = 0;
+    mut t = cur.next();
+    while (t.kind != Kind.Eof) { n += 1; t = cur.next(); }
+    return n;
+}

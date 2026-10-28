@@ -1,0 +1,75 @@
+// Litmus 1: open-addressing hash map. Tests: generics with bounds, returning
+// borrowed values (single-source elision), fn-pointer "traits", linear owners.
+import "std/mem";
+
+pub linear struct Map[K: Copy + Zero, V: Copy + Zero] {
+    keys: mem.Buf[K];
+    vals: mem.Buf[V];
+    used: mem.Buf[u8];
+    count: usize;
+    hash: fn(&const K) -> u64;
+    eq: fn(&const K, &const K) -> bool;
+}
+
+impl[K: Copy + Zero, V: Copy + Zero] Map[K, V] {
+    pub fn init(a: mem.Allocator, cap: usize, hash: fn(&const K) -> u64,
+                eq: fn(&const K, &const K) -> bool) -> Result[Map[K, V], mem.AllocError] {
+        let keys = try mem.Buf[K].init_zeroed(a, cap);
+        errdefer keys.destroy();
+        let vals = try mem.Buf[V].init_zeroed(a, cap);
+        errdefer vals.destroy();
+        let used = try mem.Buf[u8].init_zeroed(a, cap);
+        return Map[K, V]{ keys: keys, vals: vals, used: used, count: 0, hash: hash, eq: eq };
+    }
+
+    // Result borrows from `self` (only borrowed param): no lifetime annotation needed.
+    pub fn get(self: &const Map[K, V], key: K) -> ?&const V {
+        let cap = self.vals.len();
+        mut i = self.hash(&const key) as usize % cap;
+        mut probes: usize = 0;
+        while (probes < cap) {
+            if (*self.used.get(i) == 0) { return null; }
+            if (self.eq(self.keys.get(i), &const key)) { return self.vals.get(i); }
+            i = (i + 1) % cap;
+            probes += 1;
+        }
+        return null;
+    }
+
+    pub fn put(self: &mut Map[K, V], key: K, val: V) -> Result[void, mem.AllocError] {
+        if (self.count * 4 >= self.vals.len() * 3) { try self.grow(); }
+        mut i = self.hash(&const key) as usize % self.vals.len();
+        while (*self.used.get(i) != 0) {
+            if (self.eq(self.keys.get(i), &const key)) { self.vals.set(i, val); return; }
+            i = (i + 1) % self.vals.len();
+        }
+        self.keys.set(i, key);
+        self.vals.set(i, val);
+        self.used.set(i, 1);
+        self.count += 1;
+    }
+
+    fn grow(self: &mut Map[K, V]) -> Result[void, mem.AllocError] {
+        // omitted: allocate new Bufs, rehash, swap, destroy old ones
+        return mem.AllocError.OutOfMemory;
+    }
+
+    pub fn destroy(self: Map[K, V]) {
+        let Map{ keys, vals, used, .. } = self;
+        keys.destroy();
+        vals.destroy();
+        used.destroy();
+    }
+}
+
+fn hash_u32(k: &const u32) -> u64 { return *k as u64 * 0x9E3779B97F4A7C15; }
+fn eq_u32(a: &const u32, b: &const u32) -> bool { return *a == *b; }
+
+pub fn demo(a: mem.Allocator) -> Result[u32, mem.AllocError] {
+    mut m = try Map[u32, u32].init(a, 16, hash_u32, eq_u32);
+    defer m.destroy();
+    try m.put(7, 49);
+    let r = m.get(7);
+    if (r != null) { return *r; }
+    return 0;
+}
