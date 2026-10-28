@@ -1,0 +1,2 @@
+// ERROR: arrays cannot be parameters or return types of an import; only struct fields (spec/04-ffi §2)
+extern "C" { fn consume(a: u8[4]); }

@@ -32,13 +32,15 @@ An `extern` block declares functions; it has no bodies. Names bind to the C symb
 
 Rules that follow:
 
-- **C-visible types** are defined recursively; a type may appear in an import's signature only if it is C-visible:
+- **C-visible types** are defined recursively. The recursion works on *value types*; where a type may appear is a separate rule (below).
   - scalars (`bool`, integers, floats) and enums;
   - a **pointer** (`T*`, `const T*`) to **any** type: the pointee is opaque to C and need not be C-visible;
-  - a function pointer whose parameter and return types are all C-visible;
-  - a struct that has at least one field and **all** of whose fields are C-visible, where a field may be an array `T[N]` of a C-visible `T`;
+  - a function pointer whose parameter types are C-visible (and not `void`) and whose return type is C-visible or `void`;
+  - an **array** `T[N]` is C-visible iff `T` is C-visible (including arrays of arrays: `u8[4][4]` is `uint8_t[4][4]` in C, laid out row after row);
+  - a struct that has at least one field and **all** of whose fields are C-visible value types (`void` is not a value type, so it cannot be a field);
   - an alias or `distinct` type is C-visible iff its base type is.
-- **Not C-visible**, and therefore not allowed by value in a signature: slices (`{ptr, len}` is not a C type: pass `s.ptr` and `s.len`); **empty structs** (Candor gives them size 1 through a hidden byte, C gives 0 or 1); and any struct or array that contains a non-C-visible type at any depth, so `struct Box { e: Empty; x: u8; }` and `struct S { s: u8[]; }` are both rejected. Arrays by value are never allowed as a parameter or return type, only as struct fields. Pointers *to* such types are still fine.
+- **Where a C-visible type may appear in a signature.** A parameter may be a scalar, enum, pointer, function pointer, or struct. A return type may be any of those or `void`; this holds for callbacks too (`fn() -> void`, `fn(i32) -> i32`). **Arrays are never parameters or return types**, only struct fields: C would decay them to pointers, so `fn consume(m: u8[4])` is rejected while `struct Matrix { cells: u8[4][4]; }` passed by value is fine.
+- **Not C-visible**, and therefore not allowed by value anywhere in a signature: slices (`{ptr, len}` is not a C type: pass `s.ptr` and `s.len`); **empty structs** (Candor gives them size 1 through a hidden byte, C gives 0 or 1); and any struct or array that contains a non-C-visible type at any depth, so `struct Box { e: Empty; x: u8; }` and `struct S { s: u8[]; }` are both rejected. Pointers *to* such types are still fine.
 - **Strings are not NUL-terminated.** Append the terminator yourself (`"path\0"`) and pass `.ptr`.
 - **C return conventions are yours to read.** `mmap` returns `MAP_FAILED`, `read` returns `-1` with `errno`. Check them where you call. `errno` has no accessor; import `__errno_location`.
 

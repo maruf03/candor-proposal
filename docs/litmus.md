@@ -24,4 +24,4 @@ Six programs that must parse today and compile once a compiler exists. They are 
 
 ## Not tested
 
-Any semantic rule: no checker exists. The 32 `tests/fail/` programs state what a compiler must reject, each with its rule on the first line.
+Any semantic rule: no checker exists. The 33 `tests/fail/` programs state what a compiler must reject, each with its rule on the first line.

@@ -2,7 +2,7 @@
 
 A small, statically typed, ahead-of-time compiled systems language that is **C with the sharp edges filed off**: no garbage collector, no borrow checker, no hidden machinery. Structs and calls match C exactly. Arithmetic, bounds on arrays and slices, and initialization are defined; everything about pointers and memory is yours, with primitives to build any allocator or container you need.
 
-**Status:** specification (draft 2). **No compiler exists yet.** The grammar is mechanically verified; the type rules are specified and covered by 32 must-reject programs.
+**Status:** specification (draft 2). **No compiler exists yet.** The grammar is mechanically verified; the type rules are specified and covered by 33 must-reject programs.
 
 ```rust
 extern "C" {
