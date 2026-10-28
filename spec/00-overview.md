@@ -2,7 +2,7 @@
 
 **Candor** is a small, statically typed, ahead-of-time compiled systems language. It is C with the sharp edges filed off: the same structs, pointers and calling convention, with defined arithmetic, checked array and slice bounds, and mandatory initialization. There is no garbage collector, no borrow checker, no `unsafe`, and no built-in container. It gives you primitives, not policies.
 
-This is **draft 2 of the specification**. No compiler exists yet. The grammar is mechanically verified; the type rules are covered by 38 must-reject programs and six litmus programs (`docs/litmus.md`).
+This is **draft 2 of the specification**. No compiler exists yet. The grammar is mechanically verified; the type rules are covered by 38 must-reject programs and seven litmus programs (`docs/litmus.md`).
 
 ---
 
@@ -70,7 +70,7 @@ You allocate and free memory yourself, with `malloc` or an allocator you write. 
 | `spec/05-modules.md` | directory modules, visibility, imports |
 | `spec/06-compiler.md` | implementation plan, C lowering, milestones, tests |
 | `docs/decisions.md` | every decision, rationale, what is deferred and why |
-| `docs/litmus.md` | what the six litmus programs showed |
+| `docs/litmus.md` | what the seven litmus programs showed |
 | `litmus/`, `tests/` | programs that must be accepted, rejected, or fail to parse |
 | `tools/` | LL(1) checker, parser, keyword and test runners |
 | `deferred/` | designs parked for later |

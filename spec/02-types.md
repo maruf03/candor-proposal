@@ -75,7 +75,7 @@ A `distinct` type **inherits the operations of its base**, applied to operands o
 | `== != < <= > >=` | yes | `bool` |
 | `wrapping_add/sub/mul` | yes | `Distance` |
 | indexing a slice or array, `slice` lengths, slice bounds | **no**: these require exactly `usize`; write `d as usize` | |
-| mixing with the base or another distinct type: `d + 5_u32`, `d == other` | **no**: type error; cast one side | |
+| mixing with the base or another distinct type: `d + (5 as u32)`, `d == other` | **no**: type error; cast one side | |
 
 - **Literals** initialize a `distinct` integer or float type directly (`let d: Distance = 5;`, `d + 1`, `d < 100`) when the value fits the base type.
 - A `distinct` type over a pointer, struct, enum or function pointer inherits that base's operations (`==`/`!=` where the base has them, field access, dereference, calls) and nothing else; it is not an integer, so none of the arithmetic rows apply. Dereference and field access yield the base's own result types (they do not become distinct).
@@ -88,7 +88,7 @@ A `distinct` type **inherits the operations of its base**, applied to operands o
 
 - **Overflow aborts.** `+`, `-`, `*` and unary `-` abort on overflow at every width, signed and unsigned, in every build mode. For deliberate wraparound use `wrapping_add`, `wrapping_sub`, `wrapping_mul` (§8).
 - **Division.** `/` and `%` on integers abort when the divisor is `0`, and when a signed `MIN` is divided by `-1`, at every width. A constant zero divisor is a compile error. Float `/` is IEEE, never aborts.
-- **Shifts.** `<<` and `>>` convert the shift amount to the operand's type (truncating), then mask it to `N - 1` for an `N`-bit operand. `>>` is arithmetic for signed, logical for unsigned operands. `<<` operates on the bit pattern: it shifts the two's-complement representation and discards bits shifted out, never aborting, for signed operands too (`-1 << 1` is `-2`; `1_i8 << 7` is `-128`). A constant amount `>= N` is a compile error.
+- **Shifts.** `<<` and `>>` convert the shift amount to the operand's type (truncating), then mask it to `N - 1` for an `N`-bit operand. `>>` is arithmetic for signed, logical for unsigned operands. `<<` operates on the bit pattern: it shifts the two's-complement representation and discards bits shifted out, never aborting, for signed operands too (`-1 << 1` is `-2`; `(1 as i8) << 7` is `-128`). A constant amount `>= N` is a compile error.
 - **Pointers** are single-object: `*p`, `p.f` (means `(*p).f`), `&x`, comparison with `==`/`!=` and `as`. There is **no pointer arithmetic and no pointer indexing**: `p + n`, `p - q` and `p[i]` are errors. To reach many objects, hold a **slice** (`T[]`) and index it (bounds-checked); `&s[i]` is the address of an element, `s[off..]` drops a prefix, and `slice(p, n)` is the single unchecked entry from a pointer to a slice. For address math (aligning, offsets), cast to `usize`, compute, and cast back. The arithmetic is ordinary `usize` arithmetic, so `+ - *` still abort on overflow; write `wrapping_add`, `wrapping_sub` or `wrapping_mul` where wraparound is intended. `&x` is the address of a variable, field or element and has type `T*`; `&` of an rvalue is an error.
 - **Comparison** is non-associative; operands must have the same type. Equality on structs and arrays is not defined (compare fields); scalars, enums and pointers compare with `==` and `!=`.
 - **Evaluation order** is left to right for operands and call arguments. `&&` and `||` short-circuit.

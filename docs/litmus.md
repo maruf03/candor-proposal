@@ -1,6 +1,6 @@
 # Litmus Programs
 
-Six programs that must parse today and compile once a compiler exists. They are chosen to cover what a C programmer builds first, written in Candor's primitives rather than with built-ins. Parse status: `python3 tools/run_tests.py spec/01-syntax.md`. **Semantics are unchecked**: no compiler exists.
+Seven programs that must parse today and compile once a compiler exists. They are chosen to cover what a C programmer builds first, written in Candor's primitives rather than with built-ins. Parse status: `python3 tools/run_tests.py spec/01-syntax.md`. **Semantics are unchecked**: no compiler exists.
 
 | # | Program | What it exercises |
 | :-: | :--- | :--- |
@@ -10,6 +10,7 @@ Six programs that must parse today and compile once a compiler exists. They are 
 | 4 | `04_echo_server.cn` | C calls with no wrapper, return codes, `defer` per loop iteration, partial writes |
 | 5 | `05_allocator_vec.cn` | a user allocator (struct of function pointers) and a growable `Vec[T]` built on it |
 | 6 | `06_multi_conn_server.cn` | many connections each owning a heap buffer, by-value C structs, swap-remove, `poll` |
+| 7 | `07_distinct_types.cn` | `distinct` types: literals, inherited arithmetic, base conversions, generic instantiation, `usize` for indexing |
 
 ## Frictions found
 
@@ -21,6 +22,7 @@ Six programs that must parse today and compile once a compiler exists. They are 
 - **Review round 4:** `02` expected 9 tokens but `=` also counts (10); `ll1.py` printed conflicts yet exited 0, so every tool could pass on a conflicting grammar (now fixed, and the parser refuses such grammars); empty structs need a hidden byte in the C lowering (`spec/06-compiler.md` §4) and are not C-visible.
 - **Review round 5:** `ll1.py` silently accepted malformed EBNF (a `{ ... ]` mismatch passed every check) and now validates delimiters, punctuation and full character consumption; `run_tests.py` resolved corpus paths against the working directory and passed with zero tests, and now resolves them from the repo root and fails on an empty suite. Slice bounds and indices must be `usize`. C-visibility is defined recursively in `spec/04-ffi.md` §2 (three new must-reject tests).
 - **Review round 6:** the scope of a `let` and the operation rules of `distinct` were unspecified; both are now rules with five new must-reject tests.
+- **Review round 7:** undefined and unreachable grammar symbols are now rejected in the shared analysis (all tools exit 1); `distinct` gets a positive acceptance program (`07`); spec examples no longer use the forbidden `_u32`/`_i8` literal suffixes.
 - **Dangling is possible by design**: in `06`, `drop` frees `buf` and a stale `Conn` copy would dangle. The language will not stop it.
 
 ## Not tested

@@ -67,6 +67,20 @@ def analyze(path, start="Module"):
     p = P(tokenize(extract(path))); p.grammar()
     G = p.prods
     nts = set(G)
+    LEXICAL = {"Ident", "IntLit", "FloatLit", "StringLit", "CharLit"}
+    used = {v for alts in G.values() for a in alts for k, v in a if k == "n"}
+    undefined = used - nts - LEXICAL
+    if undefined: raise SystemExit(f"EBNF error: undefined nonterminals: {sorted(undefined)}")
+    if start not in nts: raise SystemExit(f"EBNF error: start symbol {start!r} is not defined")
+    reach, todo = set(), [start]
+    while todo:
+        n = todo.pop()
+        if n in reach or n not in G: continue
+        reach.add(n)
+        todo += [v for a in G[n] for k, v in a if k == "n"]
+    top = {n for n in nts if "~" not in n}
+    unreachable = top - reach
+    if unreachable: raise SystemExit(f"EBNF error: productions unreachable from {start}: {sorted(unreachable)}")
     nullable = set()
     ch = True
     while ch:

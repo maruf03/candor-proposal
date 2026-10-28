@@ -44,8 +44,8 @@ The trade-offs are listed in `spec/00-overview.md` §4; every decision is in `do
 | :--- | :--- |
 | `spec/00-overview.md` ... `06-compiler.md` | the specification: overview, syntax, types, memory, FFI, modules, compiler plan |
 | `docs/decisions.md` | every decision with alternatives and costs; what is deferred and why |
-| `docs/litmus.md` | what the six litmus programs showed |
-| `litmus/` | six programs that must be accepted |
+| `docs/litmus.md` | what the seven litmus programs showed |
+| `litmus/` | seven programs that must be accepted |
 | `tests/fail/`, `tests/syntax_fail/` | programs that must be rejected (semantically / by the parser) |
 | `tools/` | LL(1) checker, parser, keyword check, test runner |
 | `deferred/` | parked designs: ownership checking, concurrency, LLVM backend, packages and LSP |

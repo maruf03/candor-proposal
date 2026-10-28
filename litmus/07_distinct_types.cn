@@ -1,0 +1,42 @@
+// Litmus 7: `distinct` types. Exercises: direct literal initialization, inherited
+// arithmetic and comparison on the same distinct type, explicit conversion to and
+// from the base, conversion to usize for indexing, generic instantiation over a
+// distinct type, and a distinct type as a struct field.
+
+type Meters = distinct u32;
+type Seconds = distinct u32;
+type Handle = distinct usize;
+
+pub struct Leg { dist: Meters; time: Seconds; }
+
+fn add[T](a: T, b: T) -> T { return a + b; }
+
+fn longer(a: Meters, b: Meters) -> Meters {
+    if (a > b) { return a; }
+    return b;
+}
+
+fn lookup(table: const u8[], h: Handle) -> u8 {
+    return table[h as usize];            // indexing needs exactly usize
+}
+
+pub fn main() -> i32 {
+    let a: Meters = 40;                  // literal initializes a distinct type
+    let b: Meters = 2;
+    let total = a + b * 3;               // inherited arithmetic, literal takes Meters
+    if (total != 46) { return 1; }       // comparison with a literal
+    if (longer(a, b) != a) { return 2; }
+
+    let raw = total as u32;              // explicit conversion to the base
+    let back = raw as Meters;            // and from it
+    if (back != total) { return 3; }
+
+    if (add[Meters](a, b) != 42) { return 4; }   // generic instantiated over a distinct type
+    let leg = Leg{ dist: a, time: 10 };          // literal into a distinct field
+    if (leg.dist != 40) { return 5; }
+
+    let table: u8[4] = [10, 20, 30, 40];
+    let h: Handle = 2;
+    if (lookup(table[..], h) != 30) { return 6; }
+    return 0;
+}
