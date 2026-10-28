@@ -1,0 +1,10 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn put(s: u8[]) { s[0] = 9; }
+
+pub fn main() -> i32 {
+mut a: u8[2] = [4, 5];
+put(a[..]);
+    if (!(a[0] == 9)) { return 1; }
+    return 0;
+}

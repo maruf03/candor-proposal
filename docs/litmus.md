@@ -34,8 +34,8 @@ Seven programs that must parse today and compile once a compiler exists. They ar
 - **Evaluation order** of struct and array literal elements, and of an assignment's index versus its right side, is now stated.
 - **Fall-through.** "Not all paths return" had no definition; `spec/01-syntax.md` §5 now says which statements cannot fall through (two new must-reject tests).
 
-Open, not decided: slicing an immutable (`let`) array (should `a[..]` be a `const` slice?), and whether generic type arguments can ever be inferred (the micro tests always write them).
+Settled afterwards (D-08c): a `let` array slices to `const T[]` and `&` of a `let` gives `const T*`; generic type arguments are always written explicitly.
 
 ## Not tested
 
-Any semantic rule: no checker exists. The 40 `tests/fail/` programs state what a compiler must reject, each with its rule on the first line.
+Any semantic rule: no checker exists. The 43 `tests/fail/` programs state what a compiler must reject, each with its rule on the first line.

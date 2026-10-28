@@ -1,0 +1,3 @@
+// ERROR: generic type arguments are never inferred (spec/02-types §6)
+fn id[T](x: T) -> T { return x; }
+fn f() { let a = id(5); }

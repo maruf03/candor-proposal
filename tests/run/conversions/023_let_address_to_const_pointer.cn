@@ -1,0 +1,11 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn read(p: const i32*) -> i32 { return *p; }
+
+pub fn main() -> i32 {
+let x: i32 = 7;
+let p = &x;
+    if (!(read(p) == 7)) { return 1; }
+    if (!(*p == 7)) { return 2; }
+    return 0;
+}

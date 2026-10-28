@@ -1,0 +1,2 @@
+// ERROR: the address of a let binding is a const pointer (spec/02-types §4)
+fn f() { let x: i32 = 1; let p: i32* = &x; }

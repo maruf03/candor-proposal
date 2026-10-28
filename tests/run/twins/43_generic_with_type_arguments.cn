@@ -1,0 +1,9 @@
+// SPEC: 02-types §6
+// EXPECT: exit 0
+fn id[T](x: T) -> T { return x; }
+fn f() { let a = id[i32](5); }
+
+pub fn main() -> i32 {
+    f();
+    return 0;
+}

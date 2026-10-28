@@ -1,0 +1,2 @@
+// ERROR: a slice of a let array is const; it cannot be written through (spec/02-types §4)
+fn f() { let a: u8[2] = [1, 2]; let s = a[..]; s[0] = 3; }

@@ -1,0 +1,8 @@
+// SPEC: 01-syntax §5
+// EXPECT: exit 0
+fn f() -> i32 { while (true) { return 1; } }
+
+pub fn main() -> i32 {
+    let r = f();
+    return 0;
+}

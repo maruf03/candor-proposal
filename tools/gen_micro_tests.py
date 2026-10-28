@@ -374,6 +374,20 @@ twin("36_shadow_parameter_in_nested_block", "03-memory §5", "fn f(x: i32) { { l
 twin("37_distinct_converted", "02-types §3.1", "type Distance = distinct u32;\nfn f(a: Distance, b: u32) -> Distance { return a + (b as Distance); }", "let r = f(1, 2);\n    return 0;")
 twin("38_distinct_index_via_usize", "02-types §3.1", "type Idx = distinct usize;\nfn f(a: u8[4], i: Idx) -> u8 { return a[i as usize]; }", "let r = f([0; 4], 1);\n    return 0;")
 
+# const access from let, explicit type arguments
+H("conversions", "let_array_slice_to_const_param", "02-types §4", "exit 0", "fn first(s: const u8[]) -> u8 { return s[0]; }\n\n" + M("let a: u8[2] = [4, 5];\n" + chk("first(a[..]) == 4")))
+H("conversions", "let_address_to_const_pointer", "02-types §4", "exit 0", "fn read(p: const i32*) -> i32 { return *p; }\n\n" + M("let x: i32 = 7;\nlet p = &x;\n" + chk("read(p) == 7", "*p == 7")))
+H("conversions", "mut_array_slice_is_writable", "02-types §4", "exit 0", "fn put(s: u8[]) { s[0] = 9; }\n\n" + M("mut a: u8[2] = [4, 5];\nput(a[..]);\n" + chk("a[0] == 9")))
+H("conversions", "let_binding_of_mutable_pointer_is_writable", "02-types §4", "exit 0", M("mut x: i32 = 1;\nlet p = &x;\n*p = 5;\n" + chk("x == 5")))
+H("conversions", "let_slice_binding_writes_through", "02-types §4", "exit 0", "fn put(s: u8[]) { let t = s; t[0] = 8; }\n\n" + M("mut a: u8[2] = [4, 5];\nput(a[..]);\n" + chk("a[0] == 8")))
+H("generics", "explicit_type_arguments_on_function", "02-types §6", "exit 0", "fn id[T](x: T) -> T { return x; }\n\n" + C("id[u16](9) == 9"))
+H("generics", "receiver_fixes_method_type_arguments", "02-types §6", "exit 0", "struct Box[T] { v: T; }\nimpl[T] Box[T] { pub fn get(self: Box[T]) -> T { return self.v; } }\n\n" + M("let b = Box[u8]{ v: 4 };\n" + chk("b.get() == 4")))
+twin("39_switch_arms_all_return", "01-syntax §5", "fn f(x: i32) -> i32 { switch (x) { case 1: { return 1; } else: { return 0; } } }", "let r = f(1);\n    return 0;")
+twin("40_while_true_returns", "01-syntax §5", "fn f() -> i32 { while (true) { return 1; } }", "let r = f();\n    return 0;")
+twin("41_write_through_slice_of_mut_array", "02-types §4", "fn f() { mut a: u8[2] = [1, 2]; let s = a[..]; s[0] = 3; }", "f();\n    return 0;")
+twin("42_mutable_pointer_to_mut_binding", "02-types §4", "fn f() { mut x: i32 = 1; let p: i32* = &x; }", "f();\n    return 0;")
+twin("43_generic_with_type_arguments", "02-types §6", "fn id[T](x: T) -> T { return x; }\nfn f() { let a = id[i32](5); }", "f();\n    return 0;")
+
 # ---------------------------------------------------------------- write
 if os.path.isdir(OUT): shutil.rmtree(OUT)
 counts = {}

@@ -1,0 +1,9 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn first(s: const u8[]) -> u8 { return s[0]; }
+
+pub fn main() -> i32 {
+let a: u8[2] = [4, 5];
+    if (!(first(a[..]) == 4)) { return 1; }
+    return 0;
+}
