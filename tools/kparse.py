@@ -2,28 +2,31 @@ import re, sys
 import ll1  # run from tools/ or with tools/ on PYTHONPATH
 KW = set("pub as import fn struct enum impl type distinct extern const let mut if else switch case while for in break continue return defer size_of true false null".split())
 OPS = ["<<=",">>=","->","..","<<",">>","<=",">=","==","!=","&&","||","+=","-=","*=","/=","%=","&=","|=","^="] + list("+-*/%&|^~!<>=.,;:(){}[]")
-NUM = [r"0[xX][0-9a-fA-F]+(?:_[0-9a-fA-F]+)*", r"0[bB][01]+(?:_[01]+)*", r"\d+(?:_\d+)*(?:\.\d+(?:_\d+)*)?(?:[eE][+-]?\d+)?"]
+ALNUM_ = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_")
+NUM = [r"0[xX][0-9a-fA-F]+(?:_[0-9a-fA-F]+)*", r"0[bB][01]+(?:_[01]+)*", r"[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+)*)?(?:[eE][+-]?[0-9]+)?"]
 STR = r'"(?:[^"\\\n]|\\(?:x[0-9a-fA-F]{2}|[nrt\\"0]))*"'
-CHR = r"'(?:\\x[0-9a-fA-F]{2}|\\[nrt\\'0]|[^'\\\n])'"
+CHR = r"'(?:\\x[0-9a-fA-F]{2}|\\[nrt\\'0]|[\x20-\x26\x28-\x5b\x5d-\x7e])'"
 def lex(src):
     """Lexer per RFC 0002 section 3. Raises SyntaxError (never SystemExit) on bad input."""
     out=[]; i=0
     while i < len(src):
         c = src[i]
-        if c.isspace(): i+=1; continue
+        if c in " \t\r\n": i+=1; continue
         if src.startswith("//", i):
             j = src.find("\n", i); i = len(src) if j < 0 else j; continue
-        if c.isdigit():
+        if "0" <= c <= "9":
             for pat in NUM:
                 m = re.match(pat, src[i:])
                 if m: break
+            else:
+                raise SyntaxError(f"malformed number near {src[i:i+10]!r}")
             t = m.group(0)
-            if i+len(t) < len(src) and (src[i+len(t)].isalnum() or src[i+len(t)] == "_"):
+            if i+len(t) < len(src) and (src[i+len(t)] in ALNUM_):
                 raise SyntaxError(f"malformed number near {src[i:i+len(t)+2]!r}")
-            kind = "FloatLit" if re.fullmatch(r"\d[\d_]*(\.\d[\d_]*([eE][+-]?\d+)?|[eE][+-]?\d+)", t) else "IntLit"
+            kind = "FloatLit" if re.fullmatch(r"[0-9][0-9_]*(\.[0-9][0-9_]*([eE][+-]?[0-9]+)?|[eE][+-]?[0-9]+)", t) else "IntLit"
             out.append((kind, t)); i += len(t); continue
-        m = re.match(r"[A-Za-z_]\w*", src[i:])
-        if m and m.group(0).isascii():
+        m = re.match(r"[A-Za-z_][A-Za-z0-9_]*", src[i:])
+        if m:
             t = m.group(0); out.append((t,t) if t in KW else ("Ident",t)); i += len(t); continue
         if c == '"':
             m = re.match(STR, src[i:])
@@ -65,7 +68,9 @@ def parse(src, gram):
     if toks[pos[0]][0]!="$": err("Module")
     return True
 if __name__=="__main__":
-    gram=sys.argv[1]
+    gram=sys.argv[1]; failed=0
     for f in sys.argv[2:]:
-        try: parse(open(f).read(), gram); print("OK  ",f)
-        except (SyntaxError, RecursionError) as e: print("FAIL",f,e if isinstance(e,SyntaxError) else "nesting too deep")
+        try: parse(open(f, encoding="utf-8").read(), gram); print("OK  ",f)
+        except (SyntaxError, RecursionError) as e:
+            failed+=1; print("FAIL",f,e if isinstance(e,SyntaxError) else "nesting too deep")
+    sys.exit(1 if failed else 0)

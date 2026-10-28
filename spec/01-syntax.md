@@ -68,7 +68,7 @@ Kore reserves **25 keywords and 3 literal words (28 reserved words)**.
 
 ## 3. Lexical Structure
 
-- **Source:** UTF-8. Non-ASCII bytes appear only in comments and string literals. No BOM. Line endings `\n` or `\r\n`. Whitespace is insignificant; statements end with `;`.
+- **Source:** UTF-8. Non-ASCII bytes appear only in comments and string literals. No BOM. Line endings `\n` or `\r\n`. Whitespace is space, tab, `\r` and `\n` only, and is insignificant; statements end with `;`. Digits are `0`-`9`, identifiers and char literals are ASCII.
 - **Comments:** `// ...` to end of line. `/// ...` is a doc comment (lexed as a comment; tooling may attach it to the next declaration). No block comments. `//` inside a string is part of the string.
 - **Identifiers:** `[A-Za-z_][A-Za-z0-9_]*`. Reserved words cannot be identifiers.
 - **Integer literals:** decimal `123`, hex `0xFF`, binary `0b1010`, with `_` between digits (`1_000`). No suffixes. A literal's type comes from context (the other operand of a binary operator, the declared type, the parameter type), defaulting to `i32`. A literal that does not fit its type is a compile error. A leading `-` is range-checked together with the literal, so `-128` is a valid `i8`.

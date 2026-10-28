@@ -17,6 +17,7 @@ Six programs that must parse today and compile once a compiler exists. They are 
 - **Error plumbing.** Programs 4 and 6 use return codes and early `return`; it is readable at this size (open question 3 in `docs/decisions.md`).
 - **No struct equality or generic operators.** `01` passes `hash` and `eq` as function pointers, as in C's `qsort`.
 - **Bugs the independent review found in the programs**: `03` could overflow its DFS stack (nodes marked when popped, not when pushed); `06` dropped unsent bytes on a partial `send`. Both fixed; both are bugs the language will not catch.
+- **Review round 3:** `03` kept `seen` flags set, so a second traversal under-counted; it now resets them at the start. The kparse lexer accepted non-ASCII digits, spaces and char literals and crashed on `²`; fixed with explicit ASCII classes and four new syntax-fail tests.
 - **Dangling is possible by design**: in `06`, `drop` frees `buf` and a stale `Conn` copy would dangle. The language will not stop it.
 
 ## Not tested

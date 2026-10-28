@@ -44,7 +44,7 @@ History: the first specification (commit `3c61f4f`) was a memory-safe design wit
 ## Types and Arithmetic
 
 ### D-09: Arithmetic is defined
-**Approved (carried over).** `+ - *` abort on overflow in every build; `wrapping_add/sub/mul` wrap. `/ %` abort on zero and `MIN / -1`. Shifts mask the amount; `<<` acts on the bit pattern. Float to int saturates. Evaluation is left to right. The C lowering uses explicit widening and temporaries to deliver these (`spec/06-compiler.md` §4); two independent reviews found holes in the first plans (signed shifts, argument order, C integer promotion, values read before a later side effect).
+**Approved (carried over).** `+ - *` abort on overflow in every build; `wrapping_add/sub/mul` wrap. `/ %` abort on zero and `MIN / -1`. Shifts mask the amount; `<<` acts on the bit pattern. Float to int saturates. Evaluation is left to right. The C lowering uses explicit widening and temporaries to deliver these (`spec/06-compiler.md` §4); independent reviews found holes in the first plans (signed shifts, argument order, C integer promotion, values read before a later side effect, `NULL + 0` when slicing an empty slice).
 - *Cost:* an overflow check on every `+`. Use `wrapping_*` where it matters.
 
 ### D-10: Pointers: nullable, single-object, casts anywhere

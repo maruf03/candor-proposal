@@ -39,6 +39,7 @@ pub fn reachable(g: Graph*, from: usize) -> usize {
     defer free(stack.ptr as (u8*));
     mut top: usize = 0;
     mut found: usize = 0;
+    for (i in 0..g.nodes.len) { g.nodes[i].seen = false; }   // fresh traversal state
     // Mark on push, so each node is on the stack at most once (len entries suffice).
     let root = &g.nodes[from];
     root.seen = true;

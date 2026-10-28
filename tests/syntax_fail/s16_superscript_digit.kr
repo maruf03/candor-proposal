@@ -1,0 +1,2 @@
+// SYNTAX ERROR: non-ASCII digit after a number
+fn f() { let x = 1²; }

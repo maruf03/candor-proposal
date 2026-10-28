@@ -1,0 +1,2 @@
+// SYNTAX ERROR: non-ASCII whitespace outside a string or comment
+fn f() { }

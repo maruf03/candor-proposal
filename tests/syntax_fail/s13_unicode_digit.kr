@@ -1,0 +1,2 @@
+// SYNTAX ERROR: non-ASCII digit outside a string or comment
+fn f() { let x = ١; }

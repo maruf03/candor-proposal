@@ -1,0 +1,2 @@
+// SYNTAX ERROR: char literals are ASCII
+fn f() { let c = '😀'; }
