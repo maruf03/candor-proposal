@@ -1,0 +1,2 @@
+// SYNTAX ERROR: must be rejected by the parser
+linear struct Fd { raw: i32; }

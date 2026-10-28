@@ -1,0 +1,2 @@
+// ERROR: break outside a loop (spec/01-syntax §5)
+fn f() { break; }

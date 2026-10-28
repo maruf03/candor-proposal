@@ -39,7 +39,7 @@ def main(path):
     if not lm or int(lm.group(1)) != n_lit:
         print("MISMATCH: 'Literals (N)' label does not match", n_lit, "listed literals"); ok = False
     G, _, _ = ll1.analyze(path)
-    terms = {v for alts in G.values() for a in alts for k, v in a if k == "t" and re.fullmatch(r"[a-z]+", v)}
+    terms = {v for alts in G.values() for a in alts for k, v in a if k == "t" and re.fullmatch(r"[a-z_]+", v)}
     box = set(words) | set(lits)
     for label, a, b in (("grammar terminals", terms, box), ("kparse.KW", set(kparse.KW), box)):
         if a != b:

@@ -1,2 +1,0 @@
-// ERROR: no implicit numeric conversion (spec/02-types §3)
-fn f(a: i32, b: i64) -> i64 { return a + b; }

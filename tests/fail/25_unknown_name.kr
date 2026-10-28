@@ -1,0 +1,2 @@
+// ERROR: undefined name (spec/05-modules §4)
+fn f() { let x = missing; }

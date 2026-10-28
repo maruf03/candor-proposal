@@ -1,3 +1,0 @@
-// ERROR: elements of one array are a single place; two exclusive borrows overlap (spec/03-memory §2)
-fn both(a: &mut i32, b: &mut i32) { }
-fn f() { mut a: i32[2] = [0; 2]; both(&mut a[0], &mut a[1]); }

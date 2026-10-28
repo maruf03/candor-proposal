@@ -1,64 +1,49 @@
-// Litmus 4: TCP echo server (blocking, single thread). Exercises: extern "C"
-// imports (every call is `unsafe(...)`), a linear file descriptor, defer inside a
-// loop, nullable raw pointers at the C boundary, error enums that never cross
-// into C, slices as call-time borrows.
+// Litmus 4: blocking TCP echo server. Exercises: extern "C" calls as plain calls
+// (no wrapper, no marker), errors as C-style return codes, `defer` in a loop,
+// slices passed to C as ptr + len, pointer arithmetic for partial writes.
 
 extern "C" {
     fn socket(domain: i32, kind: i32, proto: i32) -> i32;
     fn bind(fd: i32, addr: const u8*, len: u32) -> i32;
     fn listen(fd: i32, backlog: i32) -> i32;
-    fn accept(fd: i32, addr: ?u8*, len: ?u32*) -> i32;
+    fn accept(fd: i32, addr: u8*, len: u32*) -> i32;
     fn read(fd: i32, buf: u8*, n: usize) -> isize;
     fn send(fd: i32, buf: const u8*, n: usize, flags: i32) -> isize;
     fn close(fd: i32) -> i32;
 }
 
-pub enum NetError { Socket, Bind, Listen, Accept, Io }
+pub enum NetError : i32 { Ok, Socket, Bind, Listen, Accept, Io }
 
-pub linear struct Fd { raw: i32; }
-
-impl Fd {
-    fn wrap(raw: i32, err: NetError) -> Result[Fd, NetError] {
-        if (raw < 0) { return err; }
-        return Fd{ raw: raw };
+// 0x4000 = MSG_NOSIGNAL on Linux: no SIGPIPE when the peer has gone
+fn write_all(fd: i32, buf: const u8[]) -> bool {
+    mut off: usize = 0;
+    while (off < buf.len) {
+        let n = send(fd, buf.ptr + off, buf.len - off, 0x4000);
+        if (n <= 0) { return false; }
+        off += n as usize;
     }
+    return true;
+}
 
-    pub fn close(self: Fd) {
-        let Fd{ raw } = self;
-        unsafe(close(raw));             // `close` here is the extern, not this method
-    }
-
-    pub fn read_some(self: &const Fd, buf: u8[]) -> Result[usize, NetError] {
-        let n = unsafe(read(self.raw, buf.ptr, buf.len));
-        if (n < 0) { return NetError.Io; }
-        return n as usize;
-    }
-
-    pub fn write_all(self: &const Fd, buf: const u8[]) -> Result[void, NetError] {
-        mut off: usize = 0;
-        while (off < buf.len) {
-            // 0x4000 = MSG_NOSIGNAL on Linux: no SIGPIPE when the peer has gone
-            let n = unsafe(send(self.raw, buf.ptr + off, buf.len - off, 0x4000));
-            if (n <= 0) { return NetError.Io; }
-            off += n as usize;
-        }
+fn echo(conn: i32) {
+    mut buf: u8[4096] = [0; 4096];
+    mut n = read(conn, &buf[0], buf.len);
+    while (n > 0) {
+        if (!write_all(conn, buf[0..n as usize])) { return; }
+        n = read(conn, &buf[0], buf.len);
     }
 }
 
-pub fn serve(sockaddr: const u8[]) -> Result[void, NetError] {
-    let srv = try Fd.wrap(unsafe(socket(2, 1, 0)), NetError.Socket);
-    defer srv.close();
-    let rc = unsafe(bind(srv.raw, sockaddr.ptr, sockaddr.len as u32));
-    if (rc < 0) { return NetError.Bind; }
-    if (unsafe(listen(srv.raw, 128)) < 0) { return NetError.Listen; }
-    while (true) {                      // no `break`: the loop diverges
-        let conn = try Fd.wrap(unsafe(accept(srv.raw, null, null)), NetError.Accept);
-        defer conn.close();             // runs at the end of every iteration
-        mut buf: u8[4096] = [0; 4096];
-        mut n = try conn.read_some(buf[..]);
-        while (n > 0) {
-            try conn.write_all(buf[0..n]);
-            n = try conn.read_some(buf[..]);
-        }
+pub fn serve(sockaddr: const u8[]) -> NetError {
+    let srv = socket(2, 1, 0);
+    if (srv < 0) { return NetError.Socket; }
+    defer close(srv);
+    if (bind(srv, sockaddr.ptr, sockaddr.len as u32) < 0) { return NetError.Bind; }
+    if (listen(srv, 128) < 0) { return NetError.Listen; }
+    while (true) {
+        let conn = accept(srv, null, null);
+        if (conn < 0) { return NetError.Accept; }
+        defer close(conn);              // runs at the end of every iteration
+        echo(conn);
     }
 }

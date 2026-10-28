@@ -1,0 +1,2 @@
+// ERROR: integer to bool is not allowed; write x != 0 (spec/02-types §3)
+fn f(x: i32) -> bool { return x as bool; }

@@ -1,2 +1,0 @@
-// ERROR: borrow-typed expressions may appear only as call arguments (spec/03-memory §2)
-fn f() { mut x: i32 = 1; let r = &mut x; *r = 2; }

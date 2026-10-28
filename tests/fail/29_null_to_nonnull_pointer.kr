@@ -1,2 +1,0 @@
-// ERROR: null is valid only for nullable pointers ?T* (spec/03-memory §6)
-fn f() { let p: u8* = null; }

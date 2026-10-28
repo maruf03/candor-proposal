@@ -1,0 +1,2 @@
+// ERROR: no implicit conversion between different pointer types (spec/02-types §3)
+fn f(p: u8*) { let q: i32* = p; }

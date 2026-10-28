@@ -1,0 +1,69 @@
+// Litmus 5: the user builds the memory primitives. An allocator is a plain struct
+// of function pointers (no hidden global); a growable Vec[T] is library code over
+// it. The language provides only `slice`, `size_of`, pointers and casts.
+
+extern "C" {
+    fn malloc(n: usize) -> u8*;
+    fn free(p: u8*);
+    fn memcpy(dst: u8*, src: const u8*, n: usize) -> u8*;
+}
+
+pub struct Alloc {
+    ctx: u8*;
+    alloc: fn(u8*, usize) -> u8*;
+    release: fn(u8*, u8*);
+}
+
+fn libc_alloc(ctx: u8*, n: usize) -> u8* { return malloc(n); }
+fn libc_release(ctx: u8*, p: u8*) { free(p); }
+
+pub fn libc() -> Alloc {
+    return Alloc{ ctx: null, alloc: libc_alloc, release: libc_release };
+}
+
+pub struct Vec[T] { items: T[]; len: usize; a: Alloc; }
+
+impl[T] Vec[T] {
+    pub fn new(a: Alloc) -> Vec[T] {
+        return Vec[T]{ items: slice(null as (T*), 0), len: 0, a: a };
+    }
+
+    pub fn free(self: Vec[T]*) {
+        if (self.items.len > 0) { self.a.release(self.a.ctx, self.items.ptr as (u8*)); }
+        self.items = slice(null as (T*), 0);
+        self.len = 0;
+    }
+
+    pub fn push(self: Vec[T]*, v: T) -> bool {
+        if (self.len == self.items.len) {
+            mut cap: usize = 4;
+            if (self.items.len > 0) { cap = self.items.len * 2; }
+            let p = self.a.alloc(self.a.ctx, cap * size_of(T));
+            if (p == null) { return false; }
+            let bigger = slice(p as (T*), cap);
+            if (self.len > 0) {
+                memcpy(p, self.items.ptr as (const u8*), self.len * size_of(T));
+            }
+            if (self.items.len > 0) { self.a.release(self.a.ctx, self.items.ptr as (u8*)); }
+            self.items = bigger;
+        }
+        self.items[self.len] = v;
+        self.len += 1;
+        return true;
+    }
+
+    pub fn get(self: Vec[T]*, i: usize) -> T {
+        if (i >= self.len) { trap(); }
+        return self.items[i];
+    }
+}
+
+pub fn main() -> i32 {
+    mut v = Vec[u32].new(libc());
+    defer v.free();
+    for (i in 0..100) {
+        if (!v.push(i as u32)) { return 1; }
+    }
+    if (v.get(99) != 99) { return 2; }
+    return 0;
+}

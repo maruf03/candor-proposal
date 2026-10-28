@@ -1,12 +1,12 @@
-// Litmus 2: tokenizer. Exercises the "view into input" pattern without stored
-// slices: tokens hold INDICES, the source is passed to every call, and text is
-// compared by slicing at the use site (borrows cannot be returned or stored).
+// Litmus 2: tokenizer. Tokens hold slices of the source directly: slices are
+// plain values, so a token can carry its own text. Nothing tracks that the source
+// outlives the tokens; the caller keeps it alive, as in C.
 
 pub enum Kind : u8 { Eof, Ident, Number, Plus, Star, LParen, RParen, Bad }
 
-pub struct Token { kind: Kind; start: u32; end: u32; }
+pub struct Token { kind: Kind; text: const u8[]; }
 
-pub struct Lexer { pos: usize; }
+pub struct Lexer { src: const u8[]; pos: usize; }
 
 fn is_alpha(c: u8) -> bool {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
@@ -14,22 +14,22 @@ fn is_alpha(c: u8) -> bool {
 fn is_digit(c: u8) -> bool { return c >= '0' && c <= '9'; }
 
 impl Lexer {
-    pub fn next(self: &mut Lexer, src: const u8[]) -> Token {
-        while (self.pos < src.len && src[self.pos] == ' ') { self.pos += 1; }
+    pub fn next(self: Lexer*) -> Token {
+        while (self.pos < self.src.len && self.src[self.pos] == ' ') { self.pos += 1; }
         let start = self.pos;
-        if (start >= src.len) {
-            return Token{ kind: Kind.Eof, start: start as u32, end: start as u32 };
+        if (start >= self.src.len) {
+            return Token{ kind: Kind.Eof, text: self.src[start..start] };
         }
-        let c = src[start];
+        let c = self.src[start];
         self.pos += 1;
         mut kind = Kind.Bad;
         if (is_alpha(c)) {
-            while (self.pos < src.len && (is_alpha(src[self.pos]) || is_digit(src[self.pos]))) {
+            while (self.pos < self.src.len && (is_alpha(self.src[self.pos]) || is_digit(self.src[self.pos]))) {
                 self.pos += 1;
             }
             kind = Kind.Ident;
         } else if (is_digit(c)) {
-            while (self.pos < src.len && is_digit(src[self.pos])) { self.pos += 1; }
+            while (self.pos < self.src.len && is_digit(self.src[self.pos])) { self.pos += 1; }
             kind = Kind.Number;
         } else {
             switch (c) {
@@ -40,11 +40,10 @@ impl Lexer {
                 else: { }
             }
         }
-        return Token{ kind: kind, start: start as u32, end: self.pos as u32 };
+        return Token{ kind: kind, text: self.src[start..self.pos] };
     }
 }
 
-// Byte-wise equality; both inputs are borrowed for the call only.
 pub fn same(a: const u8[], b: const u8[]) -> bool {
     if (a.len != b.len) { return false; }
     for (i in 0..a.len) {
@@ -53,17 +52,18 @@ pub fn same(a: const u8[], b: const u8[]) -> bool {
     return true;
 }
 
-pub fn is_let(src: const u8[], t: Token) -> bool {
-    return t.kind == Kind.Ident && same(src[t.start as usize..t.end as usize], "let");
-}
-
 pub fn count_tokens(src: const u8[]) -> usize {
-    mut lx = Lexer{ pos: 0 };
+    mut lx = Lexer{ src: src, pos: 0 };
     mut n: usize = 0;
-    mut t = lx.next(src);
+    mut t = lx.next();
     while (t.kind != Kind.Eof) {
         n += 1;
-        t = lx.next(src);
+        t = lx.next();
     }
     return n;
+}
+
+pub fn main() -> i32 {
+    if (count_tokens("let x = (a + 12) * b") != 9) { return 1; }
+    return 0;
 }

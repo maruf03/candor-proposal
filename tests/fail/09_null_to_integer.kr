@@ -1,0 +1,2 @@
+// ERROR: null converts only to pointer types (spec/02-types §3)
+fn f() { let x: i32 = null; }

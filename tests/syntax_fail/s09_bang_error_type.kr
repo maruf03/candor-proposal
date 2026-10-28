@@ -1,2 +1,0 @@
-// SYNTAX ERROR: must be rejected by the parser
-fn f() -> E!T { }

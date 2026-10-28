@@ -1,2 +1,0 @@
-// SYNTAX ERROR: must be rejected by the parser
-fn f(y: i32) { let x = cast::[u8](y); }

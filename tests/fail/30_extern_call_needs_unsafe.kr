@@ -1,3 +1,0 @@
-// ERROR: calling a C function requires unsafe (spec/04-ffi §2)
-extern "C" { fn getpid() -> i32; }
-fn f() -> i32 { return getpid(); }

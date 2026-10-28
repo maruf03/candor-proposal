@@ -1,50 +1,65 @@
-// Litmus 1: open-addressing hash map over the built-in Buf.
-// Exercises: Copy-bounded generics, function-pointer "interfaces", a linear owner,
-// errdefer, swap on a linear value (map growth), Result/try, wrapping arithmetic.
+// Litmus 1: generic open-addressing hash map over raw heap memory. Exercises:
+// generics without traits (hash and equality are function-pointer fields),
+// slices built from malloc with `slice`, a struct that owns memory by convention,
+// replacing a field through a pointer, and errors as plain return values.
 
-pub enum MapError { NotFound }
+extern "C" {
+    fn malloc(n: usize) -> u8*;
+    fn free(p: u8*);
+}
 
-pub linear struct Map[K: Copy, V: Copy] {
-    keys: Buf[K];
-    vals: Buf[V];
-    used: Buf[bool];
+pub struct Map[K, V] {
+    keys: K[];
+    vals: V[];
+    used: bool[];
     count: usize;
     hash: fn(K) -> u64;
     eq: fn(K, K) -> bool;
 }
 
-impl[K: Copy, V: Copy] Map[K, V] {
-    // `k0` and `v0` fill the unused slots (Kore has no implicit zero value).
-    pub fn init(cap: usize, k0: K, v0: V, hash: fn(K) -> u64,
-                eq: fn(K, K) -> bool) -> Result[Map[K, V], AllocError] {
-        if (cap == 0) { trap(); }
-        let keys = try Buf[K].filled(cap, k0);
-        errdefer keys.destroy();
-        let vals = try Buf[V].filled(cap, v0);
-        errdefer vals.destroy();
-        let used = try Buf[bool].filled(cap, false);
-        return Map[K, V]{ keys: keys, vals: vals, used: used, count: 0, hash: hash, eq: eq };
+fn alloc_slice[T](n: usize) -> T[] {
+    let p = malloc(n * size_of(T));
+    if (p == null) { trap(); }
+    return slice(p as (T*), n);
+}
+
+impl[K, V] Map[K, V] {
+    pub fn new(cap: usize, hash: fn(K) -> u64, eq: fn(K, K) -> bool) -> Map[K, V] {
+        let used = alloc_slice[bool](cap);
+        for (i in 0..cap) { used[i] = false; }
+        return Map[K, V]{
+            keys: alloc_slice[K](cap), vals: alloc_slice[V](cap), used: used,
+            count: 0, hash: hash, eq: eq
+        };
     }
 
-    // Slot holding `key`, or the empty slot where it belongs. Terminates because
-    // `put` keeps the load factor below 3/4.
-    fn find(self: &const Map[K, V], key: K) -> usize {
-        let cap = self.keys.len();
-        mut i = self.hash(key) as usize % cap;
-        while (self.used[i]) {
-            if (self.eq(self.keys[i], key)) { return i; }
+    pub fn destroy(self: Map[K, V]*) {
+        free(self.keys.ptr as (u8*));
+        free(self.vals.ptr as (u8*));
+        free(self.used.ptr as (u8*));
+        self.count = 0;
+    }
+
+    fn find(self: Map[K, V]*, key: K) -> usize {
+        let cap = self.keys.len;
+        mut i = (self.hash(key) % (cap as u64)) as usize;
+        while (self.used[i] && !self.eq(self.keys[i], key)) {
             i = (i + 1) % cap;
         }
         return i;
     }
 
-    pub fn get(self: &const Map[K, V], key: K) -> Result[V, MapError] {
-        let i = self.find(key);
-        if (!self.used[i]) { return MapError.NotFound; }
-        return self.vals[i];
+    fn grow(self: Map[K, V]*) {
+        mut bigger = Map[K, V].new(self.keys.len * 2, self.hash, self.eq);
+        for (i in 0..self.keys.len) {
+            if (self.used[i]) { bigger.put(self.keys[i], self.vals[i]); }
+        }
+        self.destroy();
+        *self = bigger;
     }
 
-    fn insert_raw(self: &mut Map[K, V], key: K, val: V) {
+    pub fn put(self: Map[K, V]*, key: K, val: V) {
+        if ((self.count + 1) * 4 > self.keys.len * 3) { self.grow(); }
         let i = self.find(key);
         if (!self.used[i]) {
             self.used[i] = true;
@@ -54,35 +69,23 @@ impl[K: Copy, V: Copy] Map[K, V] {
         self.vals[i] = val;
     }
 
-    pub fn put(self: &mut Map[K, V], key: K, val: V) -> Result[void, AllocError] {
-        if (self.count * 4 >= self.keys.len() * 3) { try self.grow(); }
-        self.insert_raw(key, val);
-    }
-
-    fn grow(self: &mut Map[K, V]) -> Result[void, AllocError] {
-        mut bigger = try Map[K, V].init(self.keys.len() * 2, self.keys[0], self.vals[0],
-                                        self.hash, self.eq);
-        for (i in 0..self.keys.len()) {
-            if (self.used[i]) { bigger.insert_raw(self.keys[i], self.vals[i]); }
-        }
-        swap(self, &mut bigger);        // `bigger` now owns the old tables
-        bigger.destroy();
-    }
-
-    pub fn destroy(self: Map[K, V]) {
-        let Map{ keys, vals, used, .. } = self;
-        keys.destroy();
-        vals.destroy();
-        used.destroy();
+    pub fn get(self: Map[K, V]*, key: K, out: V*) -> bool {
+        let i = self.find(key);
+        if (!self.used[i]) { return false; }
+        *out = self.vals[i];
+        return true;
     }
 }
 
 fn hash_u32(k: u32) -> u64 { return wrapping_mul(k as u64, 0x9E3779B97F4A7C15); }
 fn eq_u32(a: u32, b: u32) -> bool { return a == b; }
 
-pub fn demo() -> Result[u32, AllocError] {
-    mut m = try Map[u32, u32].init(16, 0, 0, hash_u32, eq_u32);
+pub fn main() -> i32 {
+    mut m = Map[u32, u32].new(8, hash_u32, eq_u32);
     defer m.destroy();
-    try m.put(7, 49);
-    return unwrap_or(m.get(7), 0);
+    for (i in 0..1000) { m.put(i as u32, (i * 2) as u32); }
+    mut v: u32 = 0;
+    if (!m.get(7, &v)) { return 1; }
+    if (v != 14) { return 2; }
+    return 0;
 }

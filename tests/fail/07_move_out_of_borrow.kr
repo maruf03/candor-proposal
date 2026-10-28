@@ -1,5 +1,0 @@
-// ERROR: cannot move a linear value out of a borrow (spec/03-memory §3)
-linear struct Fd { raw: i32; }
-fn close(fd: Fd) { let Fd{ raw } = fd; }
-struct Holder { fd: Fd; }
-fn steal(h: &mut Holder) -> Fd { return h.fd; }

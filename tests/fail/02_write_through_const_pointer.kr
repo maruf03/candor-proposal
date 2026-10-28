@@ -1,0 +1,2 @@
+// ERROR: cannot write through a const pointer (spec/02-types §1)
+fn f(p: const u8*) { *p = 1; }

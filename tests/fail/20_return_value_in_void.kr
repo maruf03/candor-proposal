@@ -1,0 +1,2 @@
+// ERROR: return with a value in a void function (spec/01-syntax §5)
+fn f() { return 1; }

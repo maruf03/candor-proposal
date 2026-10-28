@@ -1,0 +1,3 @@
+// ERROR: enum has no such variant (spec/02-types §5)
+enum C { R, G }
+fn f() { let c = C.B; }

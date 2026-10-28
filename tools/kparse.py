@@ -1,7 +1,7 @@
 import re, sys
 import ll1  # run from tools/ or with tools/ on PYTHONPATH
-KW = set("pub as import fn struct linear enum impl type distinct extern const let mut if else switch case while for in break continue return defer errdefer catch try unsafe true false null".split())
-OPS = ["<<=",">>=","->","..","<<",">>","<=",">=","==","!=","&&","||","+=","-=","*=","/=","%=","&=","|=","^="] + list("+-*/%&|^~!<>=.,;:(){}[]?")
+KW = set("pub as import fn struct enum impl type distinct extern const let mut if else switch case while for in break continue return defer size_of true false null".split())
+OPS = ["<<=",">>=","->","..","<<",">>","<=",">=","==","!=","&&","||","+=","-=","*=","/=","%=","&=","|=","^="] + list("+-*/%&|^~!<>=.,;:(){}[]")
 NUM = [r"0[xX][0-9a-fA-F]+(?:_[0-9a-fA-F]+)*", r"0[bB][01]+(?:_[01]+)*", r"\d+(?:_\d+)*(?:\.\d+(?:_\d+)*)?(?:[eE][+-]?\d+)?"]
 STR = r'"(?:[^"\\\n]|\\(?:x[0-9a-fA-F]{2}|[nrt\\"0]))*"'
 CHR = r"'(?:\\x[0-9a-fA-F]{2}|\\[nrt\\'0]|[^'\\\n])'"

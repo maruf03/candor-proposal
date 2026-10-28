@@ -1,2 +1,0 @@
-// ERROR: conditions must be bool (spec/02-types §3)
-fn f() { if (1) { } }

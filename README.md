@@ -1,43 +1,42 @@
 # Kore
 
-A small, statically typed, ahead-of-time compiled systems language: memory safe without a garbage collector or lifetime annotations, defined behavior outside `unsafe`, and direct C interop.
+A small, statically typed, ahead-of-time compiled systems language that is **C with the sharp edges filed off**: no garbage collector, no borrow checker, no hidden machinery. Structs and calls match C exactly. Arithmetic, bounds on arrays and slices, and initialization are defined; everything about pointers and memory is yours, with primitives to build any allocator or container you need.
 
-**Status:** specification v1 (draft). **No compiler exists yet.** The grammar is mechanically verified; the ownership rules are checked by hand against 5 programs and 35 must-reject programs.
+**Status:** specification (draft 2). **No compiler exists yet.** The grammar is mechanically verified; the type rules are specified and covered by 27 must-reject programs.
 
 ```rust
-linear struct Fd { raw: i32; }
-
 extern "C" {
-    fn dup(fd: i32) -> i32;
-    fn close(fd: i32) -> i32;
+    fn malloc(n: usize) -> u8*;
+    fn free(p: u8*);
 }
 
-pub enum DupError { Failed }
+struct Vec[T] { items: T[]; len: usize; }
 
-impl Fd {
-    pub fn dup(raw: i32) -> Result[Fd, DupError] {
-        let copy = unsafe(dup(raw));           // calling C is always `unsafe(...)`
-        if (copy < 0) { return DupError.Failed; }
-        return Fd{ raw: copy };
+impl[T] Vec[T] {
+    pub fn with_capacity(n: usize) -> Vec[T] {
+        let p = malloc(n * size_of(T));          // overflow aborts, never wraps
+        return Vec[T]{ items: slice(p as (T*), n), len: 0 };
     }
-    pub fn close(self: Fd) {
-        let Fd{ raw } = self;                  // destructuring consumes the handle
-        unsafe(close(raw));
+    pub fn push(self: Vec[T]*, v: T) {
+        if (self.len == self.items.len) { trap(); }
+        self.items[self.len] = v;                // slice index is bounds-checked
+        self.len += 1;
     }
 }
 
 pub fn main() -> i32 {
-    let f = Fd.dup(1) catch (e) { return 1; };
-    defer f.close();                           // cannot be forgotten: `f` is linear
+    mut v = Vec[u32].with_capacity(8);
+    defer free(v.items.ptr as (u8*));
+    v.push(7);
     return 0;
 }
 ```
 
 ## The Idea
 
-Borrows (`&const`, `&mut`, slices) exist **only for the duration of a call**: they cannot be returned, stored, or named, so they cannot dangle and need no lifetimes. Resources are `linear`: consumed exactly once, on every path. `defer` and `errdefer` make cleanup path-complete. 29 keywords, one marker (`Copy`), no traits, no closures, no macros.
+C gives you pointers, structs and the machine. Kore keeps all of that and fixes only what costs nothing to fix: integer overflow, division, shifts, array and slice bounds, and uninitialized variables are defined. There is no `unsafe` (nothing to opt out of), no built-in container (a `Vec` is library code over a slice), no ownership tracking, and no traits or closures. `defer` is the one convenience for cleanup. 25 keywords. Safety nets are tools, not syntax.
 
-The trade-offs (no returned references, `Copy`-only containers, single-threaded in v1) are listed in `spec/00-overview.md` §4.
+The trade-offs are listed in `spec/00-overview.md` §4; every decision is in `docs/decisions.md`.
 
 ## Layout
 
@@ -45,11 +44,11 @@ The trade-offs (no returned references, `Copy`-only containers, single-threaded 
 | :--- | :--- |
 | `spec/00-overview.md` ... `06-compiler.md` | the specification: overview, syntax, types, memory, FFI, modules, compiler plan |
 | `docs/decisions.md` | every decision with alternatives and costs; what is deferred and why |
-| `docs/litmus.md` | what the five litmus programs showed |
-| `litmus/` | five programs that must be accepted |
+| `docs/litmus.md` | what the six litmus programs showed |
+| `litmus/` | six programs that must be accepted |
 | `tests/fail/`, `tests/syntax_fail/` | programs that must be rejected (semantically / by the parser) |
 | `tools/` | LL(1) checker, parser, keyword check, test runner |
-| `deferred/` | parked designs: concurrency, returned borrows, LLVM backend, packages and LSP |
+| `deferred/` | parked designs: ownership checking, concurrency, LLVM backend, packages and LSP |
 
 ## Checking the Grammar and Tests
 
@@ -61,4 +60,4 @@ python3 tools/run_tests.py spec/01-syntax.md       # litmus + tests behave as ex
 
 ## Next
 
-`spec/06-compiler.md` §5: first an ownership-check prototype (accept `litmus/`, reject `tests/fail/`), then the Rust compiler emitting C.
+`spec/06-compiler.md` §5: M0 is the parser and pretty-printer in Rust, then the type checker and C emitter.

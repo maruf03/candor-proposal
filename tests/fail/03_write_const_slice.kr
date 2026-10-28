@@ -1,0 +1,2 @@
+// ERROR: cannot assign to an element of a const slice (spec/02-types §5)
+fn f(s: const u8[]) { s[0] = 1; }

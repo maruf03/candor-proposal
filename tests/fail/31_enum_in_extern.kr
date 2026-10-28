@@ -1,3 +1,0 @@
-// ERROR: enums cannot appear in extern signatures (spec/04-ffi §3)
-enum Mode { A, B }
-extern "C" { fn set_mode(m: Mode); }

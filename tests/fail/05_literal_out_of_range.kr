@@ -1,0 +1,2 @@
+// ERROR: literal does not fit its type (spec/02-types §3)
+fn f() { let x: u8 = 256; }

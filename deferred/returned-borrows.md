@@ -1,4 +1,4 @@
-> **DEFERRED, NOT PART OF KORE v1.** The memory model v1 uses is simpler (`spec/03-memory.md` §2). This note preserves the richer design that was studied and rejected for size (`docs/decisions.md` D-01), so it can be reconsidered if copies and indices prove inadequate.
+> **DEFERRED, NOT PART OF KORE.** Kore does not track borrows at all (`spec/03-memory.md` §1, `deferred/ownership-checking.md`). This note preserves a borrow design that was studied and rejected for size, in case an optional checker is ever built.
 
 # Returned and Stored Borrows
 

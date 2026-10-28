@@ -1,0 +1,2 @@
+// ERROR: not all paths return a value (spec/06-compiler §3)
+fn f(x: i32) -> i32 { if (x > 0) { return 1; } }

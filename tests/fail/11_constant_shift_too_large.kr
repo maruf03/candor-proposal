@@ -1,0 +1,2 @@
+// ERROR: constant shift amount >= operand width (spec/02-types §4)
+fn f(x: u8) -> u8 { return x << 8; }

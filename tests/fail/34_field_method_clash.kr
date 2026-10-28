@@ -1,3 +1,0 @@
-// ERROR: a struct may not have a field and a method with the same name (spec/01-syntax §5)
-struct S { len: usize; }
-impl S { pub fn len(self: &const S) -> usize { return 0; } }

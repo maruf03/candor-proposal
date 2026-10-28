@@ -1,2 +1,0 @@
-// ERROR: a slice is a borrow and cannot be bound to a local (spec/03-memory §2)
-fn f(buf: u8[]) { let head = buf[0..4]; }

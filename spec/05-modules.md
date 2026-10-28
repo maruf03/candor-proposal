@@ -31,15 +31,14 @@ Everything is private to its directory module unless marked `pub`.
 | Item | Without `pub` | With `pub` |
 | :--- | :--- | :--- |
 | function, `const`, `type`, `enum`, `struct` | visible in this module only | visible to importers (an enum exports all its variants) |
-| struct field | accessible in this module only | readable and writable by importers (mutation still needs `&mut`/`mut`) |
+| struct field | accessible in this module only | readable and writable by importers (assignment needs a `mut` binding or a non-`const` pointer) |
 | `impl` method | this module only | importers |
 
 `pub impl` is rejected; mark the methods.
 
 - **Construction.** If a `pub struct` has one or more private fields, other modules cannot build it with a struct literal; they call a `pub` constructor function.
-- **Destructuring.** `let T{ ... } = v;` is allowed only in the module that defines `T`. This is how a module's own `destroy(self)` consumes a linear value.
 - **Layout is independent of visibility:** adding or removing `pub` never changes field order, offsets, or size.
-- **Honest limit.** Privacy is per directory, so any code in the defining directory can construct or destructure the type; see `spec/03-memory.md` §1.
+- **Privacy is encapsulation, not safety.** It keeps an API small; it does not protect memory (`spec/03-memory.md` §1).
 
 ## 4. Resolution
 
@@ -47,4 +46,4 @@ Compilation of a module is two passes: (1) parse all files and register every ty
 
 ## 5. Building
 
-v1 builds a directory: `kore build <dir> -o <binary> [--link name]...`, where each `--link` passes `-l<name>` to the C linker. There is no package manager, registry, lock file, manifest, or precompiled-package format in v1; they are deferred (`deferred/packages-and-lsp.md`).
+The compiler builds a directory: `kore build <dir> -o <binary> [--link name]...`, where each `--link` passes `-l<name>` to the C linker. There is no package manager, registry, lock file, manifest, or precompiled-package format in v1; they are deferred (`deferred/packages-and-lsp.md`).

@@ -1,50 +1,23 @@
-# Litmus Programs and Test Corpus
+# Litmus Programs
 
-Five realistic programs in `litmus/` and 45 small programs in `tests/`. They exist to find where the rules hurt **before** a compiler is built.
+Six programs that must parse today and compile once a compiler exists. They are chosen to cover what a C programmer builds first, written in Kore's primitives rather than with built-ins. Parse status: `python3 tools/run_tests.py spec/01-syntax.md`. **Semantics are unchecked**: no compiler exists.
 
-**What is verified, and what is not.**
-- **Syntax: mechanically.** `python3 tools/run_tests.py spec/01-syntax.md` checks that every litmus and `tests/fail` program parses and every `tests/syntax_fail` program is rejected.
-- **Semantics: by hand.** There is no type checker or ownership checker yet. Each program was walked against `spec/02-types.md` and `spec/03-memory.md` manually; the 35 `tests/fail` programs are the checker's acceptance tests (each starts with `// ERROR: <rule>`). The first milestone of `spec/06-compiler.md` is a prototype that accepts `litmus/` and rejects `tests/fail/`.
+| # | Program | What it exercises |
+| :-: | :--- | :--- |
+| 1 | `01_hashmap.kr` | generics without traits (function-pointer hash/eq), `slice` over `malloc`, replacing a struct through a pointer, `defer` cleanup |
+| 2 | `02_tokenizer.kr` | slices as plain values stored in tokens, enums, `switch` on bytes |
+| 3 | `03_arena_graph.kr` | self-referential heap nodes, pointer arithmetic, explicit DFS stack, `defer free` |
+| 4 | `04_echo_server.kr` | C calls with no wrapper, return codes, `defer` per loop iteration, partial writes |
+| 5 | `05_allocator_vec.kr` | a user allocator (struct of function pointers) and a growable `Vec[T]` built on it |
+| 6 | `06_multi_conn_server.kr` | many connections each owning a heap buffer, by-value C structs, swap-remove, `poll` |
 
-## The Programs
+## Frictions found
 
-| # | Program | Exercises | Result under the v1 rules |
-| :-: | :--- | :--- | :--- |
-| 1 | `01_hashmap.kr` | `Copy`-bounded generics, function-pointer "interfaces", linear owner, `errdefer`, `swap`, `Result`/`try`, `wrapping_mul` | Passes. Needed `swap` (admitted under D-03). Verbose constructor: filler values and two function pointers |
-| 2 | `02_tokenizer.kr` | indices instead of stored views, slicing as a call argument, `else if`, `switch` on a byte | Passes. A lexer cannot own or return its source or token text; every call passes `src` and callers slice at the use site |
-| 3 | `03_arena_graph.kr` | `distinct` indices, `Buf` indexing and element assignment, explicit-stack DFS, `defer`, `errdefer` | Passes cleanly. This is the pattern the language recommends for cyclic data |
-| 4 | `04_echo_server.kr` | `extern "C"`, `unsafe(...)` per call, linear `Fd`, `defer` per loop iteration, `?T*` at the C boundary, slices as borrows | Passes. All C access is eight `unsafe(...)` expressions in one module |
-| 5 | `05_typed_arena.kr` | typed handles, generics over `Copy`, recursion that borrows the arena, mapping two error enums with `catch` | Passes. The "no error widening" rule is visible and mildly annoying |
+- **Pointer types in expression position.** Explicit generic arguments are name-shaped (`spec/01-syntax.md` §5), so `foo[u8*](x)` needs an alias. `size_of(Node*)` was the common case; it is now a keyword form that takes a `Type`.
+- **Error plumbing.** Programs 4 and 6 use return codes and early `return`; it is readable at this size (open question 3 in `docs/decisions.md`).
+- **No struct equality or generic operators.** `01` passes `hash` and `eq` as function pointers, as in C's `qsort`.
+- **Dangling is possible by design**: in `06`, `drop` frees `buf` and a stale `Conn` copy would dangle. The language will not stop it.
 
-## What They Showed
+## Not tested
 
-**Costs of the call-scoped borrow model (D-01):**
-- **No stored views.** A tokenizer cannot hold its input; it takes `src` on every call. Safe but easy to misuse (pass a different buffer next time).
-- **Getters copy.** `Buf` and `Arena.get` return `T` by value. Fine for `Copy` elements; large records are read field by field or by index.
-- **No `Cursor`-style context structs.** Parsers pass state as parameters.
-
-**Costs of other decisions:**
-- **No traits (D-16).** `Map` takes `hash` and `eq` function pointers and filler values; every instantiation repeats them.
-- **Exact error types for `try` (D-06).** Litmus 5 maps `AllocError` to `ArenaError` by hand with `catch`.
-- **`Buf` has no resize.** `Map.grow` allocates a bigger map, re-inserts, and `swap`s.
-
-**Validated:**
-- Linear `Fd` plus `defer` in a loop closes a descriptor on every path (litmus 4).
-- `errdefer` keeps three-step initialization readable (litmus 1, 3).
-- `unsafe(expr)` makes the FFI layer small and greppable.
-- Index handles need no references at all for graphs and trees (litmus 3, 5).
-
-## Bugs the Exercise Found (kept as lessons)
-
-| Bug | Caught by | Fix in v1 |
-| :--- | :--- | :--- |
-| `Buf` size multiply wrapped while `count` stayed large: an out-of-bounds write from safe code | review of the earlier draft | overflow aborts (D-08); `filled` reports `OutOfMemory` |
-| `mmap` failure compared with `NULL`; C returns `MAP_FAILED` | writing the `extern` honestly | FFI chapter: translate C return conventions at the boundary |
-| a stateful allocator handle could dangle from safe code | soundness walk | no user allocators (D-09) |
-| `[safe]` on `close` let safe code close a descriptor owned by a linear `Fd` | review | attributes removed; every C call is `unsafe(...)` (D-12) |
-| SIGPIPE killed the echo server on a closed peer | review | `send(..., MSG_NOSIGNAL)` |
-| hash-map growth could not be written without replacing a linear field | rewriting litmus 1 | `swap` intrinsic (D-18) |
-
-## Not Tested
-
-Concurrency, generic instantiation errors, `distinct` beyond `as`, multi-directory modules, and anything performance-related.
+Any semantic rule: no checker exists. The 27 `tests/fail/` programs state what a compiler must reject, each with its rule on the first line.

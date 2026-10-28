@@ -1,6 +1,6 @@
 # Kore 4: C Interoperability
 
-Kore calls C directly: an `extern "C"` import compiles to an ordinary C call with no wrapper, no marshalling, and no runtime. Scope for v1 is deliberately narrow: **importing C functions with scalar and pointer signatures.** Everything else is deferred (§5).
+Kore is built to sit next to C. Every Kore function is emitted as a C function, every struct as a C struct with the same layout, and every call as a C call. An `extern "C"` import is an ordinary function call with no wrapper, no marshalling, and no runtime. There is no `unsafe` marker: calling C is like calling any other function.
 
 ---
 
@@ -10,49 +10,37 @@ Kore calls C directly: an `extern "C"` import compiles to an ordinary C call wit
 extern "C" {
     fn getpid() -> i32;
     fn read(fd: i32, buf: u8*, n: usize) -> isize;
-    fn accept(fd: i32, addr: ?u8*, len: ?u32*) -> i32;
+    fn accept(fd: i32, addr: u8*, len: u32*) -> i32;
+    fn qsort(base: u8*, n: usize, size: usize, cmp: fn(const u8*, const u8*) -> i32);
 }
 ```
 
-An `extern` block declares functions; it has no bodies. Names bind to the C symbol of the same name (functions in Kore modules are namespaced, imports are not), so choose method and function names that do not collide with an import you use unqualified. Linking extra libraries is a command-line option of the build (`spec/05-modules.md` §5).
+An `extern` block declares functions; it has no bodies. Names bind to the C symbol of the same name (Kore functions are namespaced by module, imports are not), so choose method and function names that do not collide with an import you use unqualified. Extra libraries are linked with a build option (`spec/05-modules.md` §5).
 
-## 2. Calling C is `unsafe`
-
-Every call to an imported function must be wrapped in `unsafe(...)`:
-
-```
-let pid = unsafe(getpid());
-unsafe(close(raw));
-```
-
-There is no way to mark an import as safe: whether a C function is memory-safe cannot be checked, and a safe wrapper function is one line. Put the `unsafe(...)` in a small Kore wrapper that returns a `Result` and let the rest of the program stay in safe code (`litmus/04_echo_server.kr`).
-
-## 3. Type Mapping
-
-An import's parameter and return types are limited to **C-visible** types:
+## 2. Type Mapping
 
 | Kore | C |
 | :--- | :--- |
 | `i8 i16 i32 i64`, `u8 u16 u32 u64`, `isize`, `usize` | `int8_t`..`int64_t`, `uint8_t`..`uint64_t`, `intptr_t`, `size_t` |
 | `f32`, `f64` | `float`, `double` |
-| `bool` | `uint8_t` holding 0 or 1 (never pass a C `_Bool` you did not produce) |
-| `T*` | non-null `T*` |
-| `?T*` | `T*` that may be null |
-| `const T*` | `const T*` |
+| `bool` | `uint8_t` holding 0 or 1 |
+| `T*`, `const T*` | `T*`, `const T*`; `null` is `NULL` |
+| `enum E : u8` | the backing integer type |
+| `struct S` | the same C struct, by value or by pointer |
+| `fn(A) -> R` | a C function pointer; a Kore function can be passed as a callback |
 | `void` return | `void` |
 
 Rules that follow:
 
-- **Nullable C pointers are `?T*`.** If C may return or accept `NULL`, say so in the signature. Declaring it `T*` is a lie that the compiler cannot detect.
-- **Enums are not allowed** in import signatures (C enums are integers, and an out-of-range value would be an invalid Kore enum). Use the integer type.
-- **Slices, `Buf`, `Result`, structs, arrays, and function pointers are not allowed** in import signatures. Pass `s.ptr` and `s.len` for a slice. Structs by value need ABI classification and are deferred.
+- **Allowed in a signature:** scalars, pointers, enums, structs (C layout, by value), and function pointers over those.
+- **Not allowed:** slices (`{ptr, len}` is not a C type: pass `s.ptr` and `s.len`) and arrays by value.
 - **Strings are not NUL-terminated.** Append the terminator yourself (`"path\0"`) and pass `.ptr`.
-- **C return conventions are yours to translate.** `mmap` returns `MAP_FAILED` (`-1`), not null; `read` returns `-1` with `errno`. Wrap immediately and return a `Result`. `errno` has no accessor in v1 (call `__errno_location` yourself).
+- **C return conventions are yours to read.** `mmap` returns `MAP_FAILED`, `read` returns `-1` with `errno`. Check them where you call. `errno` has no accessor; import `__errno_location`.
 
-## 4. Calling Convention
+## 3. Calling Convention
 
-Imports use the platform C ABI. Kore-to-Kore calls use a compiler-chosen convention for `Result`, slices, and `Buf`, which never appears at a C boundary. Because Kore functions cannot be exported to C in v1 (§5), there is nothing to match in the other direction.
+Kore functions use the platform C ABI for scalars, pointers, enums and structs. Slices are passed as a two-field struct, which is how Kore-to-Kore calls work but never appears in an import.
 
-## 5. Not in v1
+## 4. Not yet
 
-Deferred until a litmus program needs them (`docs/decisions.md`, D-03): exporting Kore functions with the C ABI, callbacks (C-ABI function pointers), variadic imports (`printf`, `open`), C unions and bitfields, by-value structs, C globals (`stdout`, `environ`), `packed` and `align` layouts, threads calling into Kore.
+Deferred until a litmus program needs them: variadic imports (`printf`, `open`) and naming or exporting Kore functions under a chosen C symbol (both need a compiler directive), C unions and bitfields, C globals (`stdout`, `environ`), `packed` and `align` layouts (to be added as directives when a program needs exact control), threads calling into Kore.

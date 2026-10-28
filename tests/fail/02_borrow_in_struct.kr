@@ -1,2 +1,0 @@
-// ERROR: a struct field cannot have a borrow type (spec/03-memory §2)
-struct View { data: const u8[]; }

@@ -1,60 +1,71 @@
-// Litmus 3: graph via typed arena indices (the pattern the language recommends
-// for cyclic structure). Exercises: distinct index types, built-in Buf indexing
-// and element assignment, explicit-stack DFS, defer, errdefer.
+// Litmus 3: a graph built from heap nodes that point at each other, with one
+// arena freed in a single call. Exercises: pointers stored in structs, self
+// referential types, pointer arithmetic, and a depth-first search with an explicit
+// stack. Nothing tracks lifetimes; the arena is freed in one call.
 
-pub type NodeIdx = distinct u32;
-
-pub struct Node { first_edge: u32; edge_count: u32; visited: bool; }
-
-pub linear struct Graph {
-    nodes: Buf[Node];
-    edges: Buf[NodeIdx];
+extern "C" {
+    fn malloc(n: usize) -> u8*;
+    fn free(p: u8*);
 }
 
-impl Graph {
-    pub fn init(n: usize, m: usize) -> Result[Graph, AllocError] {
-        let blank = Node{ first_edge: 0, edge_count: 0, visited: false };
-        let nodes = try Buf[Node].filled(n, blank);
-        errdefer nodes.destroy();
-        let edges = try Buf[NodeIdx].filled(m, 0 as NodeIdx);
-        return Graph{ nodes: nodes, edges: edges };
+pub struct Node { id: u32; edges: Node**; n_edges: usize; seen: bool; }
+
+pub struct Graph { nodes: Node*; count: usize; edge_store: Node**; }
+
+pub fn graph_new(count: usize) -> Graph {
+    let nodes = malloc(count * size_of(Node)) as (Node*);
+    let store = malloc(count * count * size_of(Node*)) as (Node**);
+    for (i in 0..count) {
+        let n = nodes + i;
+        n.id = i as u32;
+        n.edges = store + i * count;
+        n.n_edges = 0;
+        n.seen = false;
     }
+    return Graph{ nodes: nodes, count: count, edge_store: store };
+}
 
-    pub fn link(self: &mut Graph, n: NodeIdx, first: u32, count: u32) {
-        self.nodes[n as usize].first_edge = first;
-        self.nodes[n as usize].edge_count = count;
-    }
+pub fn graph_free(g: Graph*) {
+    free(g.nodes as (u8*));
+    free(g.edge_store as (u8*));
+}
 
-    pub fn set_edge(self: &mut Graph, slot: usize, to: NodeIdx) { self.edges[slot] = to; }
+pub fn link(g: Graph*, a: usize, b: usize) {
+    let n = g.nodes + a;
+    n.edges[n.n_edges] = g.nodes + b;
+    n.n_edges += 1;
+}
 
-    // Number of nodes reachable from `root`. The stack never holds more than
-    // edges + 1 entries: every edge is pushed at most once.
-    pub fn dfs(self: &mut Graph, root: NodeIdx) -> Result[u32, AllocError] {
-        mut stack = try Buf[NodeIdx].filled(self.edges.len() + 1, root);
-        defer stack.destroy();
-        mut sp: usize = 1;
-        mut seen: u32 = 0;
-        while (sp > 0) {
-            sp -= 1;
-            let n = stack[sp] as usize;
-            if (self.nodes[n].visited) { continue; }
-            self.nodes[n].visited = true;
-            seen += 1;
-            let first = self.nodes[n].first_edge;
-            let count = self.nodes[n].edge_count;
-            mut j: u32 = 0;
-            while (j < count) {
-                stack[sp] = self.edges[(first + j) as usize];
-                sp += 1;
-                j += 1;
+pub fn reachable(g: Graph*, from: usize) -> usize {
+    let stack = malloc(g.count * size_of(Node*)) as (Node**);
+    defer free(stack as (u8*));
+    mut top: usize = 0;
+    mut found: usize = 0;
+    stack[0] = g.nodes + from;
+    top = 1;
+    while (top > 0) {
+        top -= 1;
+        let n = stack[top];
+        if (n.seen) { continue; }
+        n.seen = true;
+        found += 1;
+        for (i in 0..n.n_edges) {
+            let m = n.edges[i];
+            if (!m.seen) {
+                stack[top] = m;
+                top += 1;
             }
         }
-        return seen;
     }
+    return found;
+}
 
-    pub fn destroy(self: Graph) {
-        let Graph{ nodes, edges } = self;
-        nodes.destroy();
-        edges.destroy();
-    }
+pub fn main() -> i32 {
+    mut g = graph_new(4);
+    defer graph_free(&g);
+    link(&g, 0, 1);
+    link(&g, 1, 2);
+    link(&g, 2, 0);
+    if (reachable(&g, 0) != 3) { return 1; }
+    return 0;
 }

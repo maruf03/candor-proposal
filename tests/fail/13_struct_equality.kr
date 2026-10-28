@@ -1,0 +1,3 @@
+// ERROR: equality is not defined on structs (spec/02-types §4)
+struct P { x: i32; }
+fn f(a: P, b: P) -> bool { return a == b; }

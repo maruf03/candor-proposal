@@ -1,0 +1,2 @@
+// ERROR: defer bodies may not contain return/break/continue (spec/03-memory §4)
+fn f() { defer { return; } }

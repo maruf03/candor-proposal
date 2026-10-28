@@ -1,4 +1,4 @@
-> **DEFERRED, NOT PART OF KORE v1.** Draft LLVM IR lowering, DWARF, and PGO notes. v1 emits C instead (`spec/06-compiler.md`). Several claims here are known to be wrong or unverified (error-union register assignment is not the C ABI, `perf script | pprof` needs a converter, frame-pointer cost is understated).
+> **DEFERRED, NOT PART OF KORE.** Draft LLVM IR lowering, DWARF, and PGO notes. v1 emits C instead (`spec/06-compiler.md`). Several claims here are known to be wrong or unverified (error-union register assignment is not the C ABI, `perf script | pprof` needs a converter, frame-pointer cost is understated).
 > References to "RFC 000N", `DESIGN_REVIEW*.md`, and `DECISIONS.md` point to v0.3 documents recoverable from git (snapshot commit `1f54205`). Code samples use draft syntax and are not guaranteed to parse or typecheck against `spec/`. Kept for the ideas; see `docs/decisions.md` D-21 for when this returns.
 
 # RFC 0005: Reference Compiler Architecture (`korec`), LLVM IR Lowering, and Zero-Overhead Observability

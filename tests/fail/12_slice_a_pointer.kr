@@ -1,0 +1,2 @@
+// ERROR: only arrays and slices can be sliced; use slice(p, n) (spec/02-types §5)
+fn f(p: u8*) { let s = p[0..4]; }

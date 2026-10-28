@@ -1,0 +1,95 @@
+// Litmus 6: a server that retains many connections at once, each with its own
+// heap buffer, driven by poll(2). Exercises: an array of structs that own
+// resources by convention, by-value C structs passed through an array pointer,
+// explicit release on every close path, and `defer` for the whole-server cleanup.
+
+extern "C" {
+    fn malloc(n: usize) -> u8*;
+    fn free(p: u8*);
+    fn poll(fds: PollFd*, n: u64, timeout: i32) -> i32;
+    fn accept(fd: i32, addr: u8*, len: u32*) -> i32;
+    fn read(fd: i32, buf: u8*, n: usize) -> isize;
+    fn send(fd: i32, buf: const u8*, n: usize, flags: i32) -> isize;
+    fn close(fd: i32) -> i32;
+}
+
+const MAX_CONNS: usize = 64;
+const BUF_SIZE: usize = 4096;
+const POLLIN: i16 = 1;
+
+pub struct PollFd { fd: i32; events: i16; revents: i16; }
+
+pub struct Conn { fd: i32; buf: u8[]; }
+
+pub struct Server {
+    listener: i32;
+    conns: Conn[64];
+    fds: PollFd[65];
+    count: usize;
+}
+
+impl Server {
+    pub fn new(listener: i32) -> Server {
+        let empty = Conn{ fd: -1, buf: slice(null as (u8*), 0) };
+        return Server{
+            listener: listener,
+            conns: [empty; 64],
+            fds: [PollFd{ fd: -1, events: POLLIN, revents: 0 }; 65],
+            count: 0
+        };
+    }
+
+    fn add(self: Server*, fd: i32) -> bool {
+        if (self.count == MAX_CONNS) { return false; }
+        let p = malloc(BUF_SIZE);
+        if (p == null) { return false; }
+        self.conns[self.count] = Conn{ fd: fd, buf: slice(p, BUF_SIZE) };
+        self.count += 1;
+        return true;
+    }
+
+    // Swap-remove: release the buffer and the fd, move the last connection in.
+    fn drop(self: Server*, i: usize) {
+        free(self.conns[i].buf.ptr);
+        close(self.conns[i].fd);
+        self.count -= 1;
+        self.conns[i] = self.conns[self.count];
+    }
+
+    pub fn shutdown(self: Server*) {
+        while (self.count > 0) { self.drop(self.count - 1); }
+        close(self.listener);
+    }
+
+    pub fn run(self: Server*) -> i32 {
+        while (true) {
+            self.fds[0] = PollFd{ fd: self.listener, events: POLLIN, revents: 0 };
+            for (i in 0..self.count) {
+                self.fds[i + 1] = PollFd{ fd: self.conns[i].fd, events: POLLIN, revents: 0 };
+            }
+            if (poll(&self.fds[0], (self.count + 1) as u64, -1) < 0) { return 1; }
+
+            // Walk backwards so swap-remove never skips an entry.
+            mut i = self.count;
+            while (i > 0) {
+                i -= 1;
+                if (self.fds[i + 1].revents == 0) { continue; }
+                let c = &self.conns[i];
+                let n = read(c.fd, c.buf.ptr, c.buf.len);
+                if (n <= 0 || send(c.fd, c.buf.ptr, n as usize, 0x4000) <= 0) {
+                    self.drop(i);
+                }
+            }
+            if (self.fds[0].revents != 0) {
+                let fd = accept(self.listener, null, null);
+                if (fd >= 0 && !self.add(fd)) { close(fd); }
+            }
+        }
+    }
+}
+
+pub fn serve(listener: i32) -> i32 {
+    mut s = Server.new(listener);
+    defer s.shutdown();
+    return s.run();
+}
