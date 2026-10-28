@@ -32,8 +32,13 @@ An `extern` block declares functions; it has no bodies. Names bind to the C symb
 
 Rules that follow:
 
-- **Allowed in a signature:** scalars, pointers, enums, structs (C layout, by value), and function pointers over those.
-- **Not allowed:** slices (`{ptr, len}` is not a C type: pass `s.ptr` and `s.len`), arrays by value, and any struct that contains a slice, directly or through nested structs or arrays. Array *fields* inside a struct are fine (C layout). Empty structs are not allowed either: Candor gives them size 1, C gives them size 0 or 1 depending on the compiler.
+- **C-visible types** are defined recursively; a type may appear in an import's signature only if it is C-visible:
+  - scalars (`bool`, integers, floats) and enums;
+  - a **pointer** (`T*`, `const T*`) to **any** type: the pointee is opaque to C and need not be C-visible;
+  - a function pointer whose parameter and return types are all C-visible;
+  - a struct that has at least one field and **all** of whose fields are C-visible, where a field may be an array `T[N]` of a C-visible `T`;
+  - an alias or `distinct` type is C-visible iff its base type is.
+- **Not C-visible**, and therefore not allowed by value in a signature: slices (`{ptr, len}` is not a C type: pass `s.ptr` and `s.len`); **empty structs** (Candor gives them size 1 through a hidden byte, C gives 0 or 1); and any struct or array that contains a non-C-visible type at any depth, so `struct Box { e: Empty; x: u8; }` and `struct S { s: u8[]; }` are both rejected. Arrays by value are never allowed as a parameter or return type, only as struct fields. Pointers *to* such types are still fine.
 - **Strings are not NUL-terminated.** Append the terminator yourself (`"path\0"`) and pass `.ptr`.
 - **C return conventions are yours to read.** `mmap` returns `MAP_FAILED`, `read` returns `-1` with `errno`. Check them where you call. `errno` has no accessor; import `__errno_location`.
 

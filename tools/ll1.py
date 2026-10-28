@@ -7,25 +7,36 @@ def extract(path):
     return m.group(1)
 
 def tokenize(src):
+    """Tokenize the EBNF strictly: any character that is not whitespace and not part of a token is an error."""
     src = re.sub(r"\(\*.*?\*\)", "", src, flags=re.S)
-    toks = []
-    for m in re.finditer(r'"((?:[^"\\]|\\.)*)"|([A-Za-z_][A-Za-z_0-9]*)|([=;|()\[\]{}])', src):
+    pat = re.compile(r'\s+|"((?:[^"\\\n]|\\.)*)"|([A-Za-z_][A-Za-z_0-9]*)|([=;|()\[\]{}])')
+    toks = []; i = 0
+    while i < len(src):
+        m = pat.match(src, i)
+        if not m: raise SystemExit(f"EBNF error: unexpected character {src[i]!r} near {src[i:i+30]!r}")
+        i = m.end()
         if m.group(1) is not None: toks.append(("T", m.group(1)))
         elif m.group(2): toks.append(("N", m.group(2)))
-        else: toks.append(("P", m.group(3)))
+        elif m.group(3): toks.append(("P", m.group(3)))
     return toks
 
 class P:
     def __init__(s, toks): s.t = toks; s.i = 0; s.prods = defaultdict(list); s.n = 0
     def peek(s): return s.t[s.i] if s.i < len(s.t) else (None, None)
-    def eat(s, v=None):
-        x = s.t[s.i]; s.i += 1; return x
+    def eat(s, want=None):
+        if s.i >= len(s.t): raise SystemExit(f"EBNF error: unexpected end of grammar, expected {want!r}")
+        x = s.t[s.i]
+        if want is not None and x != ("P", want):
+            raise SystemExit(f"EBNF error: expected {want!r}, found {x[1]!r} (token {s.i}, near {' '.join(v for _, v in s.t[max(0, s.i-4):s.i+3])!r})")
+        s.i += 1; return x
     def fresh(s, base): s.n += 1; return f"{base}~{s.n}"
     def grammar(s):
         while s.i < len(s.t):
-            _, name = s.eat(); s.eat()  # name =
+            k, name = s.eat()
+            if k != "N": raise SystemExit(f"EBNF error: expected a production name, found {name!r}")
+            s.eat("=")
             alts = s.alt(name)
-            s.eat()  # ;
+            s.eat(";")
             s.prods[name] += alts
     def alt(s, ctx):
         alts = [s.seq(ctx)]
@@ -39,13 +50,13 @@ class P:
             if k in ("T", "N"):
                 s.eat(); out.append(("t", v) if k == "T" else ("n", v))
             elif (k, v) == ("P", "("):
-                s.eat(); a = s.alt(ctx); s.eat()
+                s.eat(); a = s.alt(ctx); s.eat(")")
                 nt = s.fresh(ctx); s.prods[nt] += a; out.append(("n", nt))
             elif (k, v) == ("P", "["):
-                s.eat(); a = s.alt(ctx); s.eat()
+                s.eat(); a = s.alt(ctx); s.eat("]")
                 nt = s.fresh(ctx); s.prods[nt] += a + [[]]; out.append(("n", nt))
             elif (k, v) == ("P", "{"):
-                s.eat(); a = s.alt(ctx); s.eat()
+                s.eat(); a = s.alt(ctx); s.eat("}")
                 nt = s.fresh(ctx)
                 s.prods[nt] += [x + [("n", nt)] for x in a] + [[]]
                 out.append(("n", nt))

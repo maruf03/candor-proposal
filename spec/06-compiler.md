@@ -47,7 +47,7 @@ Small by design, because nothing tracks ownership or aliasing (`spec/03-memory.m
 | `as` | C casts for integers and pointers; saturating helper for float to int |
 | calls and operators with several operands | **every operand's value is captured at its evaluation point.** If any later operand or argument has a side effect (a call, an assignment, a pointer write), all earlier non-constant operands are copied into temporaries first. `sum(x, bump(&x))` becomes `t1 = x; t2 = bump(&x); sum(t1, t2)`, because C leaves argument order unspecified. `&&` and `||` stay conditional: the right operand's temporaries are computed only inside the branch |
 | array and slice index `a[i]` | `if (i >= len) __builtin_trap();` (index needs `i < len`) |
-| slicing `a[lo..hi]` | `if (lo > hi \|\| hi > len) __builtin_trap();` (endpoints may equal `len`), then `{ lo == 0 ? base : base + lo, hi - lo }`: no pointer arithmetic when `lo` is 0, so a null base with length 0 never executes `NULL + 0` |
+| slicing `a[lo..hi]` (`lo`, `hi` are `usize`, so never negative) | `if (lo > hi \|\| hi > len) __builtin_trap();` (endpoints may equal `len`), then `{ lo == 0 ? base : base + lo, hi - lo }`: no pointer arithmetic when `lo` is 0, so a null base with length 0 never executes `NULL + 0` |
 | `T[]` / `const T[]` | `struct { T* ptr; size_t len; }` |
 | `T[N]` | `struct Arr_T_N { T v[N]; }`: a wrapper struct, so arrays can be passed and returned by value; `a[i]` is `a.v[i]` after the bounds check; `&a[0]` is `a.v` |
 | `struct` | C struct (same field order; C layout is the language rule). An empty struct gets one hidden `uint8_t _pad;` field, so `sizeof` is 1 and a following field lands at offset 1, as Candor requires (plain `struct Empty {}` is size 0 in clang) |

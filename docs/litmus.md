@@ -19,8 +19,9 @@ Six programs that must parse today and compile once a compiler exists. They are 
 - **Bugs the independent review found in the programs**: `03` could overflow its DFS stack (nodes marked when popped, not when pushed); `06` dropped unsent bytes on a partial `send`. Both fixed; both are bugs the language will not catch.
 - **Review round 3:** `03` kept `seen` flags set, so a second traversal under-counted; it now resets them at the start. The cnparse lexer accepted non-ASCII digits, spaces and char literals and crashed on `²`; fixed with explicit ASCII classes and four new syntax-fail tests.
 - **Review round 4:** `02` expected 9 tokens but `=` also counts (10); `ll1.py` printed conflicts yet exited 0, so every tool could pass on a conflicting grammar (now fixed, and the parser refuses such grammars); empty structs need a hidden byte in the C lowering (`spec/06-compiler.md` §4) and are not C-visible.
+- **Review round 5:** `ll1.py` silently accepted malformed EBNF (a `{ ... ]` mismatch passed every check) and now validates delimiters, punctuation and full character consumption; `run_tests.py` resolved corpus paths against the working directory and passed with zero tests, and now resolves them from the repo root and fails on an empty suite. Slice bounds and indices must be `usize`. C-visibility is defined recursively in `spec/04-ffi.md` §2 (three new must-reject tests).
 - **Dangling is possible by design**: in `06`, `drop` frees `buf` and a stale `Conn` copy would dangle. The language will not stop it.
 
 ## Not tested
 
-Any semantic rule: no checker exists. The 29 `tests/fail/` programs state what a compiler must reject, each with its rule on the first line.
+Any semantic rule: no checker exists. The 32 `tests/fail/` programs state what a compiler must reject, each with its rule on the first line.

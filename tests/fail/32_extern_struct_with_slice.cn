@@ -1,0 +1,3 @@
+// ERROR: a struct containing a slice is not C-visible (spec/04-ffi §2)
+struct View { s: u8[]; }
+extern "C" { fn consume(v: View); }

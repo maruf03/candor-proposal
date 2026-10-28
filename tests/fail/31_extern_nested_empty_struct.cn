@@ -1,0 +1,4 @@
+// ERROR: a struct containing an empty struct is not C-visible (spec/04-ffi §2)
+struct Empty { }
+struct Box { e: Empty; x: u8; }
+extern "C" { fn consume(b: Box); }

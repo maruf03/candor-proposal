@@ -2,7 +2,7 @@
 
 **Candor** is a small, statically typed, ahead-of-time compiled systems language. It is C with the sharp edges filed off: the same structs, pointers and calling convention, with defined arithmetic, checked array and slice bounds, and mandatory initialization. There is no garbage collector, no borrow checker, no `unsafe`, and no built-in container. It gives you primitives, not policies.
 
-This is **draft 2 of the specification**. No compiler exists yet. The grammar is mechanically verified; the type rules are covered by 29 must-reject programs and six litmus programs (`docs/litmus.md`).
+This is **draft 2 of the specification**. No compiler exists yet. The grammar is mechanically verified; the type rules are covered by 32 must-reject programs and six litmus programs (`docs/litmus.md`).
 
 ---
 
