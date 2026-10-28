@@ -1,0 +1,4 @@
+// ERROR: use of consumed linear value (spec/03-memory §3)
+linear struct Fd { raw: i32; }
+fn close(fd: Fd) { let Fd{ raw } = fd; }
+fn f(fd: Fd) { close(fd); close(fd); }

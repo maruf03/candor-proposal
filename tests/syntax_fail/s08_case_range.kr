@@ -1,0 +1,2 @@
+// SYNTAX ERROR: must be rejected by the parser
+fn f(x: i32) { switch (x) { case 1..5: { } else: { } } }

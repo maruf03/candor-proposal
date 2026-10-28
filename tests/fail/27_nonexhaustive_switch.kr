@@ -1,0 +1,3 @@
+// ERROR: enum switch must be exhaustive or have an else arm (spec/01-syntax §2)
+enum C { R, G }
+fn f(c: C) { switch (c) { case .R: { } } }

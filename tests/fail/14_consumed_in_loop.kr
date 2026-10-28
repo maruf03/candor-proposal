@@ -1,0 +1,4 @@
+// ERROR: linear variable declared outside a loop is consumed inside it (spec/03-memory §3)
+linear struct Fd { raw: i32; }
+fn close(fd: Fd) { let Fd{ raw } = fd; }
+fn f(fd: Fd) { mut i: i32 = 0; while (i < 2) { close(fd); i += 1; } }

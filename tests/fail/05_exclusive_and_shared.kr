@@ -1,0 +1,3 @@
+// ERROR: exclusive and shared borrow of one place in a single call (spec/03-memory §2)
+fn mix(a: &mut i32, b: &const i32) { }
+fn f() { mut x: i32 = 0; mix(&mut x, &const x); }

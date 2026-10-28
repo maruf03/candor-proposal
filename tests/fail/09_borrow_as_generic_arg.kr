@@ -1,0 +1,2 @@
+// ERROR: a borrow type cannot be a generic argument (spec/03-memory §2)
+fn f(v: Buf[const u8[]]) { }

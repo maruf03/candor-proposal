@@ -1,0 +1,5 @@
+// ERROR: linear value exits scope unconsumed (spec/03-memory §3)
+linear struct Fd { raw: i32; }
+fn close(fd: Fd) { let Fd{ raw } = fd; }
+fn open() -> Fd { return Fd{ raw: 3 }; }
+fn f() { let fd = open(); }

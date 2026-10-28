@@ -1,0 +1,2 @@
+// ERROR: borrows cannot be returned (spec/03-memory §2)
+fn first(buf: &const Buf[u8]) -> &const u8 { return &const buf[0]; }

@@ -1,0 +1,59 @@
+// Litmus 5: typed bump arena plus an expression tree built in it. Exercises:
+// distinct handles instead of pointers, generics over Copy, a recursive function
+// that borrows the arena for the whole call, and the "no error widening" rule
+// (two error enums are mapped by hand with catch).
+
+pub type Idx = distinct u32;
+
+pub enum ArenaError { Full }
+pub enum Op : u8 { Num, Add, Mul }
+
+// Children are indices into the arena, never references.
+pub struct Expr { op: Op; value: i64; left: Idx; right: Idx; }
+
+pub linear struct Arena[T: Copy] {
+    items: Buf[T];
+    used: usize;
+}
+
+impl[T: Copy] Arena[T] {
+    pub fn init(capacity: usize, filler: T) -> Result[Arena[T], AllocError] {
+        let items = try Buf[T].filled(capacity, filler);
+        return Arena[T]{ items: items, used: 0 };
+    }
+
+    pub fn alloc(self: &mut Arena[T], v: T) -> Result[Idx, ArenaError] {
+        if (self.used == self.items.len()) { return ArenaError.Full; }
+        let i = self.used;
+        self.items[i] = v;
+        self.used += 1;
+        return i as Idx;
+    }
+
+    pub fn get(self: &const Arena[T], i: Idx) -> T { return self.items[i as usize]; }
+
+    pub fn destroy(self: Arena[T]) {
+        let Arena{ items, .. } = self;
+        items.destroy();
+    }
+}
+
+pub fn eval(a: &const Arena[Expr], n: Idx) -> i64 {
+    let e = a.get(n);
+    switch (e.op) {
+        case .Num: { return e.value; }
+        case .Add: { return eval(a, e.left) + eval(a, e.right); }
+        case .Mul: { return eval(a, e.left) * eval(a, e.right); }
+    }
+}
+
+pub fn demo() -> Result[i64, ArenaError] {
+    let nil = 0 as Idx;
+    let blank = Expr{ op: Op.Num, value: 0, left: nil, right: nil };
+    mut a = Arena[Expr].init(8, blank) catch (e) { return ArenaError.Full; };
+    defer a.destroy();
+    let two = try a.alloc(Expr{ op: Op.Num, value: 2, left: nil, right: nil });
+    let three = try a.alloc(Expr{ op: Op.Num, value: 3, left: nil, right: nil });
+    let sum = try a.alloc(Expr{ op: Op.Add, value: 0, left: two, right: three });
+    return eval(&const a, sum);
+}

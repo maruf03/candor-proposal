@@ -1,0 +1,2 @@
+// SYNTAX ERROR: must be rejected by the parser
+fn f() -> (i32, i32) { }

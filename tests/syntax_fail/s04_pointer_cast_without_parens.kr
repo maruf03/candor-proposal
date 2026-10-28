@@ -1,0 +1,2 @@
+// SYNTAX ERROR: must be rejected by the parser
+fn f(a: usize) { let p = a as u8*; }

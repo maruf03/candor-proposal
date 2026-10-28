@@ -1,0 +1,6 @@
+// ERROR: errdefer variable not consumed on a success exit (spec/03-memory §4)
+linear struct Fd { raw: i32; }
+fn close(fd: Fd) { let Fd{ raw } = fd; }
+enum E { Bad }
+fn make() -> Result[Fd, E] { return E.Bad; }
+fn f() -> Result[void, E] { let fd = try make(); errdefer close(fd); return; }

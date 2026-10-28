@@ -1,0 +1,4 @@
+// ERROR: a Deferred linear value cannot be moved (spec/03-memory §4)
+linear struct Fd { raw: i32; }
+fn close(fd: Fd) { let Fd{ raw } = fd; }
+fn f(fd: Fd) -> Fd { defer close(fd); return fd; }

@@ -1,59 +1,69 @@
-// Litmus 2: tokenizer. Tests: "view into input" pattern without stored slices.
-// Tokens hold INDICES, never slices; the source is passed to each call.
-pub enum Kind : u8 { Eof = 0, Ident = 1, Number = 2, Plus = 3, Star = 4, LParen = 5, RParen = 6, Bad = 7 }
+// Litmus 2: tokenizer. Exercises the "view into input" pattern without stored
+// slices: tokens hold INDICES, the source is passed to every call, and text is
+// compared by slicing at the use site (borrows cannot be returned or stored).
+
+pub enum Kind : u8 { Eof, Ident, Number, Plus, Star, LParen, RParen, Bad }
 
 pub struct Token { kind: Kind; start: u32; end: u32; }
 
-pub struct Lexer { pos: usize; }          // no `src` field: slices cannot be stored
+pub struct Lexer { pos: usize; }
 
-fn is_alpha(c: u8) -> bool { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'; }
+fn is_alpha(c: u8) -> bool {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
 fn is_digit(c: u8) -> bool { return c >= '0' && c <= '9'; }
 
 impl Lexer {
     pub fn next(self: &mut Lexer, src: const u8[]) -> Token {
         while (self.pos < src.len && src[self.pos] == ' ') { self.pos += 1; }
-        if (self.pos >= src.len) { return Token{ kind: Kind.Eof, start: self.pos as u32, end: self.pos as u32 }; }
         let start = self.pos;
+        if (start >= src.len) {
+            return Token{ kind: Kind.Eof, start: start as u32, end: start as u32 };
+        }
         let c = src[start];
         self.pos += 1;
+        mut kind = Kind.Bad;
         if (is_alpha(c)) {
-            while (self.pos < src.len && (is_alpha(src[self.pos]) || is_digit(src[self.pos]))) { self.pos += 1; }
-            return Token{ kind: Kind.Ident, start: start as u32, end: self.pos as u32 };
-        }
-        if (is_digit(c)) {
+            while (self.pos < src.len && (is_alpha(src[self.pos]) || is_digit(src[self.pos]))) {
+                self.pos += 1;
+            }
+            kind = Kind.Ident;
+        } else if (is_digit(c)) {
             while (self.pos < src.len && is_digit(src[self.pos])) { self.pos += 1; }
-            return Token{ kind: Kind.Number, start: start as u32, end: self.pos as u32 };
+            kind = Kind.Number;
+        } else {
+            switch (c) {
+                case '+': { kind = Kind.Plus; }
+                case '*': { kind = Kind.Star; }
+                case '(': { kind = Kind.LParen; }
+                case ')': { kind = Kind.RParen; }
+                else: { }
+            }
         }
-        mut k = Kind.Bad;
-        switch (c) {
-            case '+': { k = Kind.Plus; }
-            case '*': { k = Kind.Star; }
-            case '(': { k = Kind.LParen; }
-            case ')': { k = Kind.RParen; }
-            else: { }
-        }
-        return Token{ kind: k, start: start as u32, end: self.pos as u32 };
+        return Token{ kind: kind, start: start as u32, end: self.pos as u32 };
     }
 }
 
-// Text of a token: one borrowed param (`src`) => result borrows from it (elision).
-pub fn text(src: const u8[], t: Token) -> const u8[] {
-    return src[t.start as usize..t.end as usize];
+// Byte-wise equality; both inputs are borrowed for the call only.
+pub fn same(a: const u8[], b: const u8[]) -> bool {
+    if (a.len != b.len) { return false; }
+    for (i in 0..a.len) {
+        if (a[i] != b[i]) { return false; }
+    }
+    return true;
 }
 
-// A struct with a borrowed field is itself "borrowing" (second-class): it may live in
-// locals and params only, never be stored in a non-borrowing struct or returned
-// (except via single-source elision). This is what lets a parser bundle its context.
-pub struct Cursor { src: const u8[]; lex: Lexer; }
-
-impl Cursor {
-    pub fn next(self: &mut Cursor) -> Token { return self.lex.next(self.src); }
+pub fn is_let(src: const u8[], t: Token) -> bool {
+    return t.kind == Kind.Ident && same(src[t.start as usize..t.end as usize], "let");
 }
 
 pub fn count_tokens(src: const u8[]) -> usize {
-    mut cur = Cursor{ src: src, lex: Lexer{ pos: 0 } };   // `cur` borrows `src` while live
+    mut lx = Lexer{ pos: 0 };
     mut n: usize = 0;
-    mut t = cur.next();
-    while (t.kind != Kind.Eof) { n += 1; t = cur.next(); }
+    mut t = lx.next(src);
+    while (t.kind != Kind.Eof) {
+        n += 1;
+        t = lx.next(src);
+    }
     return n;
 }

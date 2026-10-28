@@ -1,0 +1,5 @@
+// ERROR: partial moves are not allowed; destructure instead (spec/03-memory §3)
+linear struct Fd { raw: i32; }
+fn close(fd: Fd) { let Fd{ raw } = fd; }
+linear struct Pair { a: Fd; b: Fd; }
+fn f(p: Pair) { close(p.a); close(p.b); }

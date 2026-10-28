@@ -1,0 +1,2 @@
+// ERROR: cannot assign to an immutable binding (spec/01-syntax §2)
+fn f() { let x: i32 = 1; x = 2; }

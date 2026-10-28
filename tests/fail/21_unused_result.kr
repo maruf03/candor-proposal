@@ -1,0 +1,4 @@
+// ERROR: a Result must be handled: try, catch, unwrap_or or is_err (spec/02-types §7)
+enum E { Bad }
+fn g() -> Result[void, E] { return E.Bad; }
+fn f() { g(); }

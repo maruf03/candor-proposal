@@ -1,0 +1,2 @@
+// ERROR: string literals may initialize only const items (spec/03-memory §2)
+fn f() { let s = "hello"; }

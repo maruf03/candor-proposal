@@ -1,0 +1,3 @@
+// ERROR: a struct literal must name every field (spec/03-memory §5)
+struct P { x: i32; y: i32; }
+fn f() { let p = P{ x: 1 }; }

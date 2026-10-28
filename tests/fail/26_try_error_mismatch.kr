@@ -1,0 +1,5 @@
+// ERROR: try requires an identical error type (spec/02-types §7)
+enum A { X }
+enum B { Y }
+fn g() -> Result[void, A] { return A.X; }
+fn f() -> Result[void, B] { try g(); }

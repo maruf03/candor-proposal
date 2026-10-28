@@ -1,0 +1,2 @@
+// ERROR: raw-pointer dereference requires unsafe (spec/03-memory §6)
+fn f(p: u8*) -> u8 { return *p; }

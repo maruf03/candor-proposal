@@ -1,0 +1,4 @@
+// ERROR: a defer may consume only variables declared in its own block (spec/03-memory §4)
+linear struct Fd { raw: i32; }
+fn close(fd: Fd) { let Fd{ raw } = fd; }
+fn f(fd: Fd) { if (true) { defer close(fd); } close(fd); }

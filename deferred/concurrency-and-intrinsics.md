@@ -1,3 +1,6 @@
+> **DEFERRED, NOT PART OF KORE v1.** Draft design for threads, `Send`/`Sync`, `Mutex`, atomics, `VM`, `Futex`, and coroutines. The v1 FFI rules are in `spec/04-ffi.md`. Known unresolved problems are listed in the banner of the document itself (no safe way to share data with a thread, `Mutex` and atomics being `Copy` by derivation, an incomplete atomics API, no memory model).
+> References to "RFC 000N", `DESIGN_REVIEW*.md`, and `DECISIONS.md` point to v0.3 documents recoverable from git (snapshot commit `1f54205`). Code samples use draft syntax and are not guaranteed to parse or typecheck against `spec/`. Kept for the ideas; see `docs/decisions.md` D-21 for when this returns.
+
 # RFC 0004: Fearless Concurrency, Seamless C ABI Interop, and Hardware Intrinsics
 
 - **RFC Number:** 0004
