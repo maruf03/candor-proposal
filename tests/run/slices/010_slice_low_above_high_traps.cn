@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: trap
+fn cut(s: const u8[], lo: usize, hi: usize) -> usize { return s[lo..hi].len; }
+
+pub fn main() -> i32 {
+mut a: u8[4] = [1, 2, 3, 4];
+let n = cut(a[..], 3, 2);
+}

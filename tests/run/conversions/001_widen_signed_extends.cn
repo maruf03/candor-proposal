@@ -1,0 +1,10 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+fn w(x: i8) -> i32 { return x as i32; }
+
+pub fn main() -> i32 {
+    if (!(w(-1) == -1)) { return 1; }
+    if (!(w(-128) == -128)) { return 2; }
+    if (!(w(127) == 127)) { return 3; }
+    return 0;
+}

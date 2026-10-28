@@ -1,0 +1,9 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+enum C { R, G }
+fn f() { let c = C.G; }
+
+pub fn main() -> i32 {
+    f();
+    return 0;
+}

@@ -1,0 +1,8 @@
+// SPEC: 03-memory §5
+// EXPECT: exit 0
+fn f(x: i32) { { let x: i32 = 2; } }
+
+pub fn main() -> i32 {
+    f(1);
+    return 0;
+}

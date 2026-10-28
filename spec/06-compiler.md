@@ -76,7 +76,8 @@ With no ownership analysis, the type checker is the whole front end, so a workin
 
 | Suite | Location | Expectation |
 | :--- | :--- | :--- |
-| accept | `litmus/*.cn` | compiles, runs, correct output |
+| accept (broad) | `litmus/*.cn` | compiles, runs, correct output |
+| accept (micro) | `tests/run/**/*.cn` | one rule per file; `// EXPECT: exit N` or `trap`; compiles, runs, matches |
 | compile-fail | `tests/fail/*.cn` | rejected; the diagnostic mentions the rule named on the first line (`// ERROR: ...`) |
 | syntax-fail | `tests/syntax_fail/*.cn` | rejected by the parser |
 | grammar | `tools/ll1.py`, `tools/check_keywords.py` | 0 conflicts, keyword lists agree |

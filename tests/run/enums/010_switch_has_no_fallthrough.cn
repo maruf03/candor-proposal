@@ -1,0 +1,9 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+fn f(x: i32) -> i32 { mut n: i32 = 0; switch (x) { case 1: { n += 1; } case 2: { n += 10; } else: { n += 100; } } return n; }
+
+pub fn main() -> i32 {
+    if (!(f(1) == 1)) { return 1; }
+    if (!(f(2) == 10)) { return 2; }
+    return 0;
+}

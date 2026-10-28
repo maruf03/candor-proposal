@@ -1,0 +1,8 @@
+// SPEC: 03-memory §4
+// EXPECT: exit 0
+fn f() { defer { } }
+
+pub fn main() -> i32 {
+    f();
+    return 0;
+}

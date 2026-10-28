@@ -1,0 +1,9 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+enum E { A, B }
+fn f(e: E) -> i32 { switch (e) { case E.A: { return 1; } case E.B: { return 2; } } }
+
+pub fn main() -> i32 {
+    if (!(f(E.B) == 2)) { return 1; }
+    return 0;
+}

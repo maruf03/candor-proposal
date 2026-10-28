@@ -1,0 +1,9 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+fn read(p: const i32*) -> i32 { return *p; }
+
+pub fn main() -> i32 {
+mut x: i32 = 9;
+    if (!(read(&x) == 9)) { return 1; }
+    return 0;
+}

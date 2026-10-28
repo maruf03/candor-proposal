@@ -1,0 +1,9 @@
+// SPEC: 04-ffi §3
+// EXPECT: exit 0
+extern "C" { fn sqrt(x: f64) -> f64; fn sqrtf(x: f32) -> f32; }
+
+pub fn main() -> i32 {
+    if (!(sqrt(9.0) == 3.0)) { return 1; }
+    if (!(sqrtf(16.0) == 4.0)) { return 2; }
+    return 0;
+}

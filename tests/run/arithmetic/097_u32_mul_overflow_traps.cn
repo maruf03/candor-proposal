@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: trap
+fn mul(a: u32, b: u32) -> u32 { return a * b; }
+
+pub fn main() -> i32 {
+    let r = mul(4294967295, 2);
+    return 0;
+}

@@ -1,0 +1,9 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn f(p: u8*) -> u8* { return ((p as usize) + 1) as (u8*); }
+
+pub fn main() -> i32 {
+    mut a: u8[2] = [0; 2];
+    let q = f(&a[0]);
+    return 0;
+}

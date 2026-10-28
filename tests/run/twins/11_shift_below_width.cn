@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn f(x: u8) -> u8 { return x << 7; }
+
+pub fn main() -> i32 {
+    let r = f(1);
+    return 0;
+}

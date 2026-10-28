@@ -1,0 +1,9 @@
+// SPEC: 04-ffi §2
+// EXPECT: exit 0
+extern "C" { fn abs(x: i32) -> i32; }
+
+pub fn main() -> i32 {
+    if (!(abs(-5) == 5)) { return 1; }
+    if (!(abs(7) == 7)) { return 2; }
+    return 0;
+}

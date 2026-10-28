@@ -1,0 +1,11 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+struct In { v: u8; }
+struct Out { a: In; b: In; }
+
+pub fn main() -> i32 {
+let o = Out{ a: In{ v: 1 }, b: In{ v: 2 } };
+    if (!(o.a.v == 1)) { return 1; }
+    if (!(o.b.v == 2)) { return 2; }
+    return 0;
+}

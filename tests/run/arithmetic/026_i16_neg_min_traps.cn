@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: trap
+fn neg(a: i16) -> i16 { return -a; }
+
+pub fn main() -> i32 {
+    let r = neg(-32768);
+    return 0;
+}

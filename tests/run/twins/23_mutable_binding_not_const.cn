@@ -1,0 +1,8 @@
+// SPEC: 02-types §7
+// EXPECT: exit 0
+fn f() { mut n: i32 = 1; n = 2; }
+
+pub fn main() -> i32 {
+    f();
+    return 0;
+}

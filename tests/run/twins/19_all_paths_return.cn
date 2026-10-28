@@ -1,0 +1,8 @@
+// SPEC: 06-compiler §3
+// EXPECT: exit 0
+fn f(x: i32) -> i32 { if (x > 0) { return 1; } return 0; }
+
+pub fn main() -> i32 {
+    let r = f(1);
+    return 0;
+}

@@ -1,0 +1,10 @@
+// SPEC: 02-types §6
+// EXPECT: exit 0
+struct Box[T] { v: T; }
+impl[T] Box[T] { pub fn make(x: T) -> Box[T] { return Box[T]{ v: x }; } }
+
+pub fn main() -> i32 {
+let b = Box[u8].make(3);
+    if (!(b.v == 3)) { return 1; }
+    return 0;
+}

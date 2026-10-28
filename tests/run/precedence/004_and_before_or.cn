@@ -1,0 +1,9 @@
+// SPEC: 01-syntax §4
+// EXPECT: exit 0
+pub fn main() -> i32 {
+let t = true;
+let f = false;
+    if (!(t || f && f)) { return 1; }
+    if (!(!(f && f || f))) { return 2; }
+    return 0;
+}

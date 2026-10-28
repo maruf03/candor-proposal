@@ -1,0 +1,9 @@
+// SPEC: 02-types §8
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut a: u8[4] = [5, 6, 7, 8];
+let s = slice(&a[0], 4);
+    if (!(s.len == 4)) { return 1; }
+    if (!(s[2] == 7)) { return 2; }
+    return 0;
+}

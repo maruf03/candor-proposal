@@ -1,0 +1,9 @@
+// SPEC: 02-types §6
+// EXPECT: exit 0
+fn add[T](a: T, b: T) -> T { return a + b; }
+
+pub fn main() -> i32 {
+    if (!(add[i32](2, 3) == 5)) { return 1; }
+    if (!(add[f64](0.5, 0.25) == 0.75)) { return 2; }
+    return 0;
+}

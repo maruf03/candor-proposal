@@ -1,0 +1,14 @@
+// SPEC: 02-types §3.1
+// EXPECT: exit 0
+type Meters = distinct u32;
+
+pub fn main() -> i32 {
+let a: Meters = 40;
+let b: Meters = 2;
+    if (!(a + b == 42)) { return 1; }
+    if (!(a - b == 38)) { return 2; }
+    if (!(a * b == 80)) { return 3; }
+    if (!(a / b == 20)) { return 4; }
+    if (!(a % b == 0)) { return 5; }
+    return 0;
+}

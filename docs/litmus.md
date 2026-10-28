@@ -25,6 +25,17 @@ Seven programs that must parse today and compile once a compiler exists. They ar
 - **Review round 7:** undefined and unreachable grammar symbols are now rejected in the shared analysis (all tools exit 1); `distinct` gets a positive acceptance program (`07`); spec examples no longer use the forbidden `_u32`/`_i8` literal suffixes.
 - **Dangling is possible by design**: in `06`, `drop` frees `buf` and a stale `Conn` copy would dangle. The language will not stop it.
 
+## Micro corpus
+
+`tests/run/` holds about 400 single-rule programs (`tests/run/README.md`), plus a near-miss accepted twin for every `tests/fail` program. Writing them found four specification gaps, now fixed:
+
+- **No block statement.** The grammar had no bare `{ ... }`, although scope and `defer` rules assumed one. `Block` is now a statement (`DeferStmt = "defer" Stmt`).
+- **Rounding rules.** Integer `/` truncates toward zero and float-to-int truncates before saturating (`spec/02-types.md`).
+- **Evaluation order** of struct and array literal elements, and of an assignment's index versus its right side, is now stated.
+- **Fall-through.** "Not all paths return" had no definition; `spec/01-syntax.md` §5 now says which statements cannot fall through (two new must-reject tests).
+
+Open, not decided: slicing an immutable (`let`) array (should `a[..]` be a `const` slice?), and whether generic type arguments can ever be inferred (the micro tests always write them).
+
 ## Not tested
 
-Any semantic rule: no checker exists. The 38 `tests/fail/` programs state what a compiler must reject, each with its rule on the first line.
+Any semantic rule: no checker exists. The 40 `tests/fail/` programs state what a compiler must reject, each with its rule on the first line.

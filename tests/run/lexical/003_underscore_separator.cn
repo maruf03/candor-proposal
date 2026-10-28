@@ -1,0 +1,7 @@
+// SPEC: 01-syntax §3
+// EXPECT: exit 0
+pub fn main() -> i32 {
+let a: u32 = 1_000_000;
+    if (!(a == 1000000)) { return 1; }
+    return 0;
+}

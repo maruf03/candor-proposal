@@ -1,0 +1,8 @@
+// SPEC: 02-types §8
+// EXPECT: exit 0
+fn sub(a: i32, b: i32) -> i32 { return wrapping_sub(a, b); }
+
+pub fn main() -> i32 {
+    if (sub(-2147483648, 1) != 2147483647) { return 1; }
+    return 0;
+}

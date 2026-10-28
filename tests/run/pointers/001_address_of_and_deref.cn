@@ -1,0 +1,10 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut x: i32 = 3;
+let p = &x;
+*p = 8;
+    if (!(x == 8)) { return 1; }
+    if (!(*p == 8)) { return 2; }
+    return 0;
+}

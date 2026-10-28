@@ -1,0 +1,9 @@
+// SPEC: 02-types §1
+// EXPECT: exit 0
+pub fn main() -> i32 {
+    if (!(size_of(usize) == size_of(isize))) { return 1; }
+    if (!(size_of(u8*) == size_of(usize))) { return 2; }
+    if (!(size_of(const u8*) == size_of(usize))) { return 3; }
+    if (!(size_of(fn(i32) -> i32) == size_of(usize))) { return 4; }
+    return 0;
+}

@@ -1,0 +1,6 @@
+// SPEC: 02-types §1
+// EXPECT: exit 0
+pub fn main() -> i32 {
+    if (!(size_of(u8[]) == 2 * size_of(usize))) { return 1; }
+    return 0;
+}

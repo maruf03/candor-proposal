@@ -1,0 +1,9 @@
+// SPEC: 02-types §7
+// EXPECT: exit 0
+const GREETING: const u8[] = "hi";
+
+pub fn main() -> i32 {
+    if (!(GREETING.len == 2)) { return 1; }
+    if (!(GREETING[0] == 'h')) { return 2; }
+    return 0;
+}

@@ -1,0 +1,8 @@
+// SPEC: 02-types §8
+// EXPECT: exit 0
+fn mul(a: i16, b: i16) -> i16 { return wrapping_mul(a, b); }
+
+pub fn main() -> i32 {
+    if (mul(32767, 32767) != 1) { return 1; }
+    return 0;
+}

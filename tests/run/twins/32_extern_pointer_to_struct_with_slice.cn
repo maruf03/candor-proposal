@@ -1,0 +1,8 @@
+// SPEC: 04-ffi §2
+// EXPECT: exit 0
+struct View { s: u8[]; }
+extern "C" { fn consume(v: View*); }
+
+pub fn main() -> i32 {
+    return 0;
+}

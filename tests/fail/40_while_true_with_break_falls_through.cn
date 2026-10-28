@@ -1,0 +1,2 @@
+// ERROR: a while loop with a break can fall off the end of a non-void function (spec/01-syntax §5)
+fn f() -> i32 { while (true) { break; } }

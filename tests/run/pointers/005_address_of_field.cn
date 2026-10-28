@@ -1,0 +1,12 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+struct P { x: i32; y: i32; }
+
+pub fn main() -> i32 {
+mut v = P{ x: 1, y: 2 };
+let p = &v.y;
+*p = 9;
+    if (!(v.y == 9)) { return 1; }
+    if (!(v.x == 1)) { return 2; }
+    return 0;
+}

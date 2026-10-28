@@ -1,0 +1,10 @@
+// SPEC: 04-ffi §2
+// EXPECT: exit 0
+extern "C" { fn atexit(cb: fn() -> void) -> i32; }
+fn done() { }
+
+pub fn main() -> i32 {
+let r = atexit(done);
+    if (!(r == 0)) { return 1; }
+    return 0;
+}

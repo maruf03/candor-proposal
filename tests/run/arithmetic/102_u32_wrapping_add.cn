@@ -1,0 +1,8 @@
+// SPEC: 02-types §8
+// EXPECT: exit 0
+fn add(a: u32, b: u32) -> u32 { return wrapping_add(a, b); }
+
+pub fn main() -> i32 {
+    if (add(4294967295, 1) != 0) { return 1; }
+    return 0;
+}

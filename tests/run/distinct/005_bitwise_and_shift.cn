@@ -1,0 +1,14 @@
+// SPEC: 02-types §3.1
+// EXPECT: exit 0
+type Flags = distinct u8;
+
+pub fn main() -> i32 {
+let a: Flags = 12;
+let b: Flags = 10;
+let n: Flags = 1;
+    if (!((a & b) == 8)) { return 1; }
+    if (!((a | b) == 14)) { return 2; }
+    if (!((a ^ b) == 6)) { return 3; }
+    if (!((a << n) == 24)) { return 4; }
+    return 0;
+}

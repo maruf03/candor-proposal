@@ -1,0 +1,8 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+enum Color { Red, Green, Blue }
+fn pick(n: i32) -> Color { return n as Color; }
+
+pub fn main() -> i32 {
+switch (pick(1)) { case .Green: { return 0; } else: { return 1; } }
+}

@@ -1,0 +1,8 @@
+// SPEC: 01-syntax §4
+// EXPECT: exit 0
+pub fn main() -> i32 {
+let x: u8 = 200;
+let c: u64 = 3;
+    if (!(x as u64 * c == 600)) { return 1; }
+    return 0;
+}

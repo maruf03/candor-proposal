@@ -1,0 +1,11 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut a: u8[4] = [1, 2, 3, 4];
+let p = a[..2];
+let q = a[2..];
+    if (!(p.len == 2)) { return 1; }
+    if (!(q.len == 2)) { return 2; }
+    if (!(q[0] == 3)) { return 3; }
+    return 0;
+}

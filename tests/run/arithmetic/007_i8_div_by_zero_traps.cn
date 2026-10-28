@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: trap
+fn div(a: i8, b: i8) -> i8 { return a / b; }
+
+pub fn main() -> i32 {
+    let r = div(5, 0);
+    return 0;
+}

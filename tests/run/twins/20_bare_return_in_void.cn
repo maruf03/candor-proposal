@@ -1,0 +1,8 @@
+// SPEC: 01-syntax §5
+// EXPECT: exit 0
+fn f() { return; }
+
+pub fn main() -> i32 {
+    f();
+    return 0;
+}

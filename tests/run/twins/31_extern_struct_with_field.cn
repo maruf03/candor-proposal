@@ -1,0 +1,8 @@
+// SPEC: 04-ffi §2
+// EXPECT: exit 0
+struct Box { x: u8; }
+extern "C" { fn consume(b: Box); }
+
+pub fn main() -> i32 {
+    return 0;
+}

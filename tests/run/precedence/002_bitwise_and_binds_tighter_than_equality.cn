@@ -1,0 +1,9 @@
+// SPEC: 01-syntax §4
+// EXPECT: exit 0
+pub fn main() -> i32 {
+let flags: u32 = 6;
+let mask: u32 = 4;
+    if (!(flags & mask == 4)) { return 1; }
+    if (!(flags & 1 == 0)) { return 2; }
+    return 0;
+}

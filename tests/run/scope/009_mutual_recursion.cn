@@ -1,0 +1,10 @@
+// SPEC: 05-modules §4
+// EXPECT: exit 0
+fn even(n: u32) -> bool { if (n == 0) { return true; } return odd(n - 1); }
+fn odd(n: u32) -> bool { if (n == 0) { return false; } return even(n - 1); }
+
+pub fn main() -> i32 {
+    if (!(even(10))) { return 1; }
+    if (!(odd(7))) { return 2; }
+    return 0;
+}

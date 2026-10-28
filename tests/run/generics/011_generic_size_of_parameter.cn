@@ -1,0 +1,9 @@
+// SPEC: 02-types §6
+// EXPECT: exit 0
+fn bytes[T](n: usize) -> usize { return n * size_of(T); }
+
+pub fn main() -> i32 {
+    if (!(bytes[u32](3) == 12)) { return 1; }
+    if (!(bytes[u8](3) == 3)) { return 2; }
+    return 0;
+}

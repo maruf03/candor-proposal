@@ -1,0 +1,8 @@
+// SPEC: 03-memory §2
+// EXPECT: trap
+fn at(s: const u8[], i: usize) -> u8 { return s[i]; }
+
+pub fn main() -> i32 {
+mut a: u8[8] = [0; 8];
+let v = at(a[0..4], 6);
+}

@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn neg(a: i64) -> i64 { return -a; }
+
+pub fn main() -> i32 {
+    if (neg(-9223372036854775807) != 9223372036854775807) { return 1; }
+    return 0;
+}

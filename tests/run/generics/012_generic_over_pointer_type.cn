@@ -1,0 +1,11 @@
+// SPEC: 02-types §6
+// EXPECT: exit 0
+type BytePtr = u8*;
+fn id[T](x: T) -> T { return x; }
+
+pub fn main() -> i32 {
+mut b: u8 = 1;
+let p = id[BytePtr](&b);
+    if (!(*p == 1)) { return 1; }
+    return 0;
+}

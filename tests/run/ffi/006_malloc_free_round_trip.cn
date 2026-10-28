@@ -1,0 +1,15 @@
+// SPEC: 04-ffi §2
+// EXPECT: exit 0
+extern "C" { fn malloc(n: usize) -> u8*; fn free(p: u8*); }
+
+pub fn main() -> i32 {
+let p = malloc(16);
+if (p == null) { return 1; }
+let s = slice(p, 16);
+s[0] = 7;
+s[15] = 9;
+let ok = s[0] == 7 && s[15] == 9;
+free(p);
+    if (!(ok)) { return 1; }
+    return 0;
+}

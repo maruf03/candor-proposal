@@ -1,0 +1,9 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn shl(a: i16, n: i16) -> i16 { return a << n; }
+fn shr(a: i16, n: i16) -> i16 { return a >> n; }
+
+pub fn main() -> i32 {
+    if (shl(1, 17) != 2) { return 1; }
+    return 0;
+}

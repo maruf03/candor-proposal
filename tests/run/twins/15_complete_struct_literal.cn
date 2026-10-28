@@ -1,0 +1,9 @@
+// SPEC: 03-memory §5
+// EXPECT: exit 0
+struct P { x: i32; y: i32; }
+fn f() { let p = P{ x: 1, y: 2 }; }
+
+pub fn main() -> i32 {
+    f();
+    return 0;
+}

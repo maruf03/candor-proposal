@@ -1,0 +1,12 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn swap(a: i32*, b: i32*) { let t = *a; *a = *b; *b = t; }
+
+pub fn main() -> i32 {
+mut a: i32 = 1;
+mut b: i32 = 2;
+swap(&a, &b);
+    if (!(a == 2)) { return 1; }
+    if (!(b == 1)) { return 2; }
+    return 0;
+}

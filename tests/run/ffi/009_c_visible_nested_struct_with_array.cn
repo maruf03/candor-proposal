@@ -1,0 +1,9 @@
+// SPEC: 04-ffi §2
+// EXPECT: exit 0
+struct Pt { xy: i32[2]; }
+struct Seg { a: Pt; b: Pt; }
+extern "C" { fn use_seg(s: Seg) -> i32; }
+
+pub fn main() -> i32 {
+return 0;
+}

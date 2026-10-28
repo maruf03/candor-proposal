@@ -1,0 +1,7 @@
+// SPEC: 01-syntax §4
+// EXPECT: exit 0
+pub fn main() -> i32 {
+    if (!(1 + 2 * 3 == 7)) { return 1; }
+    if (!((1 + 2) * 3 == 9)) { return 2; }
+    return 0;
+}

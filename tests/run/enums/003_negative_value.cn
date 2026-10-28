@@ -1,0 +1,9 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+enum E { A = -1, B }
+
+pub fn main() -> i32 {
+    if (!((E.A as i32) == -1)) { return 1; }
+    if (!((E.B as i32) == 0)) { return 2; }
+    return 0;
+}

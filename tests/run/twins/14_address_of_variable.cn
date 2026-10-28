@@ -1,0 +1,9 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn g() -> i32 { return 1; }
+fn f() { let v = g(); let p = &v; }
+
+pub fn main() -> i32 {
+    f();
+    return 0;
+}

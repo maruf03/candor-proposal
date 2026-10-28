@@ -1,0 +1,10 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut x: i32 = 1;
+let cp: const i32* = &x;
+let p = cp as (i32*);
+*p = 4;
+    if (!(x == 4)) { return 1; }
+    return 0;
+}

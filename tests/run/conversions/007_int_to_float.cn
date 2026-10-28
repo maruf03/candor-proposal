@@ -1,0 +1,9 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+fn f(x: i32) -> f64 { return x as f64; }
+
+pub fn main() -> i32 {
+    if (!(f(3) == 3.0)) { return 1; }
+    if (!(f(-2) == -2.0)) { return 2; }
+    return 0;
+}

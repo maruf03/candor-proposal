@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: trap
+fn add(a: u16, b: u16) -> u16 { return a + b; }
+
+pub fn main() -> i32 {
+    let r = add(65535, 1);
+    return 0;
+}

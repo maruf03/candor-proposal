@@ -1,0 +1,9 @@
+// SPEC: 04-ffi §2
+// EXPECT: exit 0
+enum Mode : i32 { A = 3 }
+extern "C" { fn abs(x: i32) -> i32; }
+
+pub fn main() -> i32 {
+    if (!(abs(Mode.A as i32) == 3)) { return 1; }
+    return 0;
+}

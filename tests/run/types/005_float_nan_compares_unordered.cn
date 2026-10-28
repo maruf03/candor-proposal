@@ -1,0 +1,11 @@
+// SPEC: 02-types §2
+// EXPECT: exit 0
+fn nan() -> f64 { let z: f64 = 0.0; return z / z; }
+
+pub fn main() -> i32 {
+    if (!(nan() != nan())) { return 1; }
+    if (!(!(nan() == nan()))) { return 2; }
+    if (!(!(nan() < 1.0))) { return 3; }
+    if (!(!(nan() > 1.0))) { return 4; }
+    return 0;
+}

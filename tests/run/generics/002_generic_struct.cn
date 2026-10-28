@@ -1,0 +1,10 @@
+// SPEC: 02-types §6
+// EXPECT: exit 0
+struct Pair[A, B] { a: A; b: B; }
+
+pub fn main() -> i32 {
+let p = Pair[u8, i32]{ a: 1, b: -2 };
+    if (!(p.a == 1)) { return 1; }
+    if (!(p.b == -2)) { return 2; }
+    return 0;
+}

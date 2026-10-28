@@ -1,0 +1,10 @@
+// SPEC: 02-types §3.1
+// EXPECT: exit 0
+type Id = distinct u8;
+fn w(a: Id, b: Id) -> Id { return wrapping_add(a, b); }
+
+pub fn main() -> i32 {
+let m: Id = 255;
+    if (!(w(m, 2) == 1)) { return 1; }
+    return 0;
+}

@@ -1,0 +1,18 @@
+// SPEC: 03-memory §3
+// EXPECT: exit 0
+extern "C" { fn malloc(n: usize) -> u8*; fn free(p: u8*); }
+struct Alloc { alloc: fn(usize) -> u8*; release: fn(u8*); }
+fn m(n: usize) -> u8* { return malloc(n); }
+fn f(p: u8*) { free(p); }
+
+pub fn main() -> i32 {
+let a = Alloc{ alloc: m, release: f };
+let p = a.alloc(8);
+if (p == null) { return 1; }
+let s = slice(p, 8);
+s[7] = 3;
+let ok = s[7] == 3;
+a.release(p);
+    if (!(ok)) { return 1; }
+    return 0;
+}

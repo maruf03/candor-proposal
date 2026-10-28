@@ -1,0 +1,10 @@
+// SPEC: 02-types §1
+// EXPECT: exit 0
+type Count = u32;
+fn id(x: u32) -> u32 { return x; }
+
+pub fn main() -> i32 {
+let c: Count = 7;
+    if (!(id(c) == 7)) { return 1; }
+    return 0;
+}

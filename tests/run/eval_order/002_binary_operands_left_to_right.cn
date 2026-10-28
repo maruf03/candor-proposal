@@ -1,0 +1,11 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn mark(log: u32*, d: u32) -> u32 { *log = *log * 10 + d; return d; }
+
+pub fn main() -> i32 {
+mut log: u32 = 0;
+let r = mark(&log, 1) + mark(&log, 2);
+    if (!(log == 12)) { return 1; }
+    if (!(r == 3)) { return 2; }
+    return 0;
+}

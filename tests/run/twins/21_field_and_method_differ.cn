@@ -1,0 +1,10 @@
+// SPEC: 01-syntax §5
+// EXPECT: exit 0
+struct S { len: usize; }
+impl S { pub fn size(self: S*) -> usize { return 0; } }
+
+pub fn main() -> i32 {
+    mut s = S{ len: 1 };
+    let r = s.size();
+    return 0;
+}

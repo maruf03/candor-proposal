@@ -1,0 +1,9 @@
+// SPEC: 01-syntax §5
+// EXPECT: exit 0
+fn f(x: i32) -> i32 { switch (x) { case 1: { return 10; } else: { return 0; } } }
+
+pub fn main() -> i32 {
+    if (!(f(1) == 10)) { return 1; }
+    if (!(f(5) == 0)) { return 2; }
+    return 0;
+}

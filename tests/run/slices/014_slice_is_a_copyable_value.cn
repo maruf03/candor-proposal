@@ -1,0 +1,12 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+struct View { s: const u8[]; }
+
+pub fn main() -> i32 {
+mut a: u8[2] = [7, 8];
+let v = View{ s: a[..] };
+let w = v;
+    if (!(w.s[1] == 8)) { return 1; }
+    if (!(v.s.len == 2)) { return 2; }
+    return 0;
+}

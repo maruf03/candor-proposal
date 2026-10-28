@@ -1,0 +1,9 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+fn f(p: u8*) { let s = slice(p, 4); }
+
+pub fn main() -> i32 {
+    mut a: u8[4] = [0; 4];
+    f(&a[0]);
+    return 0;
+}

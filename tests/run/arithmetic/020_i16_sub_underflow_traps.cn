@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: trap
+fn sub(a: i16, b: i16) -> i16 { return a - b; }
+
+pub fn main() -> i32 {
+    let r = sub(-32768, 1);
+    return 0;
+}

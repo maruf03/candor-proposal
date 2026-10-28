@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: trap
+fn rem(a: u8, b: u8) -> u8 { return a % b; }
+
+pub fn main() -> i32 {
+    let r = rem(5, 0);
+    return 0;
+}

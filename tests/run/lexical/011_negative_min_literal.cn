@@ -1,0 +1,9 @@
+// SPEC: 01-syntax §3
+// EXPECT: exit 0
+pub fn main() -> i32 {
+let a: i8 = -128;
+let b: i64 = -9223372036854775808;
+    if (!(a == -128)) { return 1; }
+    if (!(b < 0)) { return 2; }
+    return 0;
+}

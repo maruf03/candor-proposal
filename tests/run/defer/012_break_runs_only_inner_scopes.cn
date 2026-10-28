@@ -1,0 +1,9 @@
+// SPEC: 03-memory §4
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut log: u32 = 0;
+defer log = 0;
+while (true) { defer log += 1; break; }
+    if (!(log == 1)) { return 1; }
+    return 0;
+}

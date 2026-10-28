@@ -1,0 +1,6 @@
+// SPEC: 01-syntax §3
+// EXPECT: exit 0
+// leading comment
+pub fn main() -> i32 {
+    return 0; // trailing
+}

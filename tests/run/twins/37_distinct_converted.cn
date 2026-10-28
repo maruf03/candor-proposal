@@ -1,0 +1,9 @@
+// SPEC: 02-types §3.1
+// EXPECT: exit 0
+type Distance = distinct u32;
+fn f(a: Distance, b: u32) -> Distance { return a + (b as Distance); }
+
+pub fn main() -> i32 {
+    let r = f(1, 2);
+    return 0;
+}

@@ -107,10 +107,11 @@ Bitwise operators bind tighter than comparison and looser than `+`/`-` (Rust's o
 - **Conversions** are `expr as T`. The type after `as` is a name with optional bracket suffixes; a type ending in `*` must be parenthesized, `p as (u8*)`, so `x as u8 * y` is always a multiplication.
 - **Pointer-to-function** types need parentheses: `(fn() -> u8)*`. (`fn() -> u8*` is a function returning a pointer.)
 - **Errors** are ordinary values: an enum code, a negative integer, a null pointer, or a struct holding a status; there is no special syntax (`docs/decisions.md`, D-06).
+- **Block statements.** A bare `{ ... }` is a statement. It opens a scope for shadowing and a limit for `defer`. It cannot be confused with a struct literal (a postfix on a type name) or an expression, so the grammar stays LL(1).
 - **Struct literals** are a postfix `{ f: v, ... }` on a type name: `Point{ x: 1, y: 2 }`, `Pair[i32, i32]{ a: 1, b: 2 }`. Every condition is parenthesized, so `{` after an expression never starts a block.
 - **Array literals** are `[a, b, c]` and the repeat form `[v; n]`.
 - **Ranges are half-open.** `a..b` is `[a, b)` in `for`, in slicing `a[lo..hi]`, and nowhere else; `a[..n]`, `a[n..]`, `a[..]` omit an end.
-- **Semantic restrictions kept out of the grammar:** `..` in a slice index is valid on arrays and slices only; `defer` bodies may not contain `return`/`break`/`continue`; `else:` must be the last `case` arm; `break`/`continue` must be inside a loop; `return;` is valid only in a `void` function; a struct may not have a field and a method with the same name; `pub impl` is rejected.
+- **Semantic restrictions kept out of the grammar:** `..` in a slice index is valid on arrays and slices only; `defer` bodies may not contain `return`/`break`/`continue`; `else:` must be the last `case` arm; `break`/`continue` must be inside a loop; `return;` is valid only in a `void` function; a function with a non-`void` return type must not be able to reach the end of its body, where a statement *cannot fall through* if it is a `return`, a block whose last statement cannot fall through, an `if`/`else` whose branches both cannot, a `switch` with an `else:` arm or covering every enum variant whose arms all cannot, or a `while (true)` with no `break`; a struct may not have a field and a method with the same name; `pub impl` is rejected.
 
 ---
 
@@ -158,7 +159,7 @@ TypeList        = Type { "," Type } ;
 Block           = "{" { Stmt } "}" ;
 Stmt            = VarStmt | ConstDecl | IfStmt | SwitchStmt | WhileStmt | ForStmt
                 | ReturnStmt | DeferStmt | BreakStmt | ContinueStmt
-                | ExprStmt ;
+                | Block | ExprStmt ;
 VarStmt         = ( "let" | "mut" ) VarTarget "=" Expr ";" ;
 VarTarget       = Ident [ ":" Type ] ;
 IfStmt          = "if" "(" Expr ")" Block [ "else" ( IfStmt | Block ) ] ;
@@ -168,7 +169,7 @@ CaseArm         = "case" Expr { "," Expr } ":" Block
 WhileStmt       = "while" "(" Expr ")" Block ;
 ForStmt         = "for" "(" Ident "in" Expr [ ".." Expr ] ")" Block ;
 ReturnStmt      = "return" [ Expr ] ";" ;
-DeferStmt       = "defer" ( Stmt | Block ) ;
+DeferStmt       = "defer" Stmt ;
 BreakStmt       = "break" ";" ;
 ContinueStmt    = "continue" ";" ;
 ExprStmt        = Expr [ AssignOp Expr ] ";" ;

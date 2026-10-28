@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn inf() -> f64 { let z: f64 = 0.0; return 1.0 / z; }
+
+pub fn main() -> i32 {
+    if (!(inf() > 1.0e300)) { return 1; }
+    return 0;
+}

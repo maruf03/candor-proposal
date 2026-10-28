@@ -2,7 +2,7 @@
 
 A small, statically typed, ahead-of-time compiled systems language that is **C with the sharp edges filed off**: no garbage collector, no borrow checker, no hidden machinery. Structs and calls match C exactly. Arithmetic, bounds on arrays and slices, and initialization are defined; everything about pointers and memory is yours, with primitives to build any allocator or container you need.
 
-**Status:** specification (draft 2). **No compiler exists yet.** The grammar is mechanically verified; the type rules are specified and covered by 38 must-reject programs.
+**Status:** specification (draft 2). **No compiler exists yet.** The grammar is mechanically verified; the type rules are specified and covered by 40 must-reject programs.
 
 ```rust
 extern "C" {
@@ -46,6 +46,7 @@ The trade-offs are listed in `spec/00-overview.md` §4; every decision is in `do
 | `docs/decisions.md` | every decision with alternatives and costs; what is deferred and why |
 | `docs/litmus.md` | what the seven litmus programs showed |
 | `litmus/` | seven programs that must be accepted |
+| `tests/run/` | ~400 single-rule programs that must be accepted, with expected exit status or abort |
 | `tests/fail/`, `tests/syntax_fail/` | programs that must be rejected (semantically / by the parser) |
 | `tools/` | LL(1) checker, parser, keyword check, test runner |
 | `deferred/` | parked designs: ownership checking, concurrency, LLVM backend, packages and LSP |

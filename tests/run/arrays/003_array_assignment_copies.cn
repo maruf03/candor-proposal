@@ -1,0 +1,10 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut a: u8[2] = [1, 2];
+mut b = a;
+b[0] = 9;
+    if (!(a[0] == 1)) { return 1; }
+    if (!(b[0] == 9)) { return 2; }
+    return 0;
+}

@@ -1,0 +1,8 @@
+// SPEC: 05-modules §4
+// EXPECT: exit 0
+fn f() { let x = 1; let y = x; }
+
+pub fn main() -> i32 {
+    f();
+    return 0;
+}

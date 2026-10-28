@@ -1,0 +1,9 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+fn total(s: const u8[]) -> u32 { mut t: u32 = 0; for (x in s) { t += x as u32; } return t; }
+
+pub fn main() -> i32 {
+mut a: u8[3] = [1, 2, 3];
+    if (!(total(a[..]) == 6)) { return 1; }
+    return 0;
+}

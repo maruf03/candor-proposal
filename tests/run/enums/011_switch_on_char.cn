@@ -1,0 +1,9 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+fn f(c: u8) -> i32 { switch (c) { case 'a': { return 1; } case 'b': { return 2; } else: { return 0; } } }
+
+pub fn main() -> i32 {
+    if (!(f('b') == 2)) { return 1; }
+    if (!(f('z') == 0)) { return 2; }
+    return 0;
+}

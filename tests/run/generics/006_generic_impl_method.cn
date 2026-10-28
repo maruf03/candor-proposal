@@ -1,0 +1,10 @@
+// SPEC: 02-types §6
+// EXPECT: exit 0
+struct Box[T] { v: T; }
+impl[T] Box[T] { pub fn get(self: Box[T]) -> T { return self.v; } }
+
+pub fn main() -> i32 {
+let b = Box[u16]{ v: 9 };
+    if (!(b.get() == 9)) { return 1; }
+    return 0;
+}

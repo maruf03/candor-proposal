@@ -1,0 +1,12 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+struct P { x: i32; }
+fn bump(p: P) -> P { mut q = p; q.x += 1; return q; }
+
+pub fn main() -> i32 {
+let a = P{ x: 1 };
+let b = bump(a);
+    if (!(a.x == 1)) { return 1; }
+    if (!(b.x == 2)) { return 2; }
+    return 0;
+}

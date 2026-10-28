@@ -1,0 +1,9 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut x: u32 = 0x01020304;
+let bytes = &x as (u8*);
+let back = bytes as (u32*);
+    if (!(*back == 0x01020304)) { return 1; }
+    return 0;
+}

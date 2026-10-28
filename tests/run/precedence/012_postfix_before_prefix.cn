@@ -1,0 +1,11 @@
+// SPEC: 01-syntax §4
+// EXPECT: exit 0
+struct P { x: i32; }
+
+pub fn main() -> i32 {
+let p = P{ x: 3 };
+mut a: i32[2] = [5, 6];
+    if (!(-p.x == -3)) { return 1; }
+    if (!(-a[1] == -6)) { return 2; }
+    return 0;
+}

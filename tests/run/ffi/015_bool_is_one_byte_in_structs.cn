@@ -1,0 +1,8 @@
+// SPEC: 04-ffi §3
+// EXPECT: exit 0
+struct Flags { a: bool; b: bool; }
+
+pub fn main() -> i32 {
+    if (!(size_of(Flags) == 2)) { return 1; }
+    return 0;
+}

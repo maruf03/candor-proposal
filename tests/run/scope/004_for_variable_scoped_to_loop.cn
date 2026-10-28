@@ -1,0 +1,10 @@
+// SPEC: 03-memory §5
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut n: i32 = 0;
+for (i in 0..3) { n += i; }
+let i: u32 = 100;
+    if (!(n == 3)) { return 1; }
+    if (!(i == 100)) { return 2; }
+    return 0;
+}

@@ -1,0 +1,13 @@
+// SPEC: 03-memory §4
+// EXPECT: exit 0
+fn f(early: bool, out: u32*) { if (early) { return; } defer *out = 7; }
+
+pub fn main() -> i32 {
+mut a: u32 = 0;
+mut b: u32 = 0;
+f(true, &a);
+f(false, &b);
+    if (!(a == 0)) { return 1; }
+    if (!(b == 7)) { return 2; }
+    return 0;
+}

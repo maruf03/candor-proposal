@@ -1,0 +1,7 @@
+// SPEC: 02-types §4
+// EXPECT: trap
+fn at(a: u8[4], i: usize) -> u8 { return a[i]; }
+
+pub fn main() -> i32 {
+let v = at([1, 2, 3, 4], 9);
+}

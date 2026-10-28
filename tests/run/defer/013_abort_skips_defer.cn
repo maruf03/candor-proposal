@@ -1,0 +1,9 @@
+// SPEC: 03-memory §4
+// EXPECT: trap
+fn boom(z: u32) -> u32 { return 1 / z; }
+
+pub fn main() -> i32 {
+mut n: u32 = 0;
+defer n = 1;
+let r = boom(0);
+}

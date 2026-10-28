@@ -1,0 +1,14 @@
+// SPEC: 04-ffi §1
+// EXPECT: exit 0
+extern "C" {
+    fn getpid() -> i32;
+    fn abs(x: i32) -> i32;
+    fn labs(x: i64) -> i64;
+}
+
+pub fn main() -> i32 {
+    if (!(getpid() > 0)) { return 1; }
+    if (!(abs(-1) == 1)) { return 2; }
+    if (!(labs(-9) == 9)) { return 3; }
+    return 0;
+}

@@ -1,0 +1,9 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+enum Color { Red, Green, Blue }
+
+pub fn main() -> i32 {
+    if (!((Color.Blue as i32) == 2)) { return 1; }
+    if (!((Color.Red as u8) == 0)) { return 2; }
+    return 0;
+}

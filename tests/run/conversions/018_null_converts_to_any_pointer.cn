@@ -1,0 +1,12 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+struct S { a: i32; }
+
+pub fn main() -> i32 {
+let p: u8* = null;
+let q: S* = null;
+let r: fn(i32) -> i32 = null;
+    if (!(p == null)) { return 1; }
+    if (!(q == null)) { return 2; }
+    return 0;
+}

@@ -52,7 +52,7 @@ Primitive and compound types, conversions, arithmetic, pointers and slices, enum
 | :--- | :--- |
 | integer to integer | widening extends by the *source* type's signedness (so `-1 as usize` is all ones); narrowing truncates |
 | integer to float | nearest value |
-| float to integer | **saturates**; NaN becomes 0 |
+| float to integer | truncates toward zero, then **saturates** to the target range; NaN becomes 0 |
 | float to float | nearest value |
 | `bool` to integer | 0 or 1 |
 | integer to `bool` | not allowed (write `x != 0`) |
@@ -87,11 +87,11 @@ A `distinct` type **inherits the operations of its base**, applied to operands o
 ## 4. Arithmetic, Pointers, Operators
 
 - **Overflow aborts.** `+`, `-`, `*` and unary `-` abort on overflow at every width, signed and unsigned, in every build mode. For deliberate wraparound use `wrapping_add`, `wrapping_sub`, `wrapping_mul` (§8).
-- **Division.** `/` and `%` on integers abort when the divisor is `0`, and when a signed `MIN` is divided by `-1`, at every width. A constant zero divisor is a compile error. Float `/` is IEEE, never aborts.
+- **Division.** Integer `/` truncates toward zero and `%` takes the sign of the dividend (`-7 / 2` is `-3`, `-7 % 2` is `-1`), as in C. `/` and `%` on integers abort when the divisor is `0`, and when a signed `MIN` is divided by `-1`, at every width. A constant zero divisor is a compile error. Float `/` is IEEE, never aborts.
 - **Shifts.** `<<` and `>>` convert the shift amount to the operand's type (truncating), then mask it to `N - 1` for an `N`-bit operand. `>>` is arithmetic for signed, logical for unsigned operands. `<<` operates on the bit pattern: it shifts the two's-complement representation and discards bits shifted out, never aborting, for signed operands too (`-1 << 1` is `-2`; `(1 as i8) << 7` is `-128`). A constant amount `>= N` is a compile error.
 - **Pointers** are single-object: `*p`, `p.f` (means `(*p).f`), `&x`, comparison with `==`/`!=` and `as`. There is **no pointer arithmetic and no pointer indexing**: `p + n`, `p - q` and `p[i]` are errors. To reach many objects, hold a **slice** (`T[]`) and index it (bounds-checked); `&s[i]` is the address of an element, `s[off..]` drops a prefix, and `slice(p, n)` is the single unchecked entry from a pointer to a slice. For address math (aligning, offsets), cast to `usize`, compute, and cast back. The arithmetic is ordinary `usize` arithmetic, so `+ - *` still abort on overflow; write `wrapping_add`, `wrapping_sub` or `wrapping_mul` where wraparound is intended. `&x` is the address of a variable, field or element and has type `T*`; `&` of an rvalue is an error.
 - **Comparison** is non-associative; operands must have the same type. Equality on structs and arrays is not defined (compare fields); scalars, enums and pointers compare with `==` and `!=`.
-- **Evaluation order** is left to right for operands and call arguments. `&&` and `||` short-circuit.
+- **Evaluation order** is left to right for operands and call arguments, for the elements of struct and array literals in source order, and, in an assignment, for the left side's index and subexpressions before the right side. `&&` and `||` short-circuit. A `for (i in lo..hi)` range with only integer literals has type `i32`; otherwise `i` takes the type of the non-literal bound.
 - **Bounds.** Array and slice indices and slice bounds (`i`, `lo`, `hi`) must have type `usize`; any other integer type is a type error (write `i as usize`, which for a negative `i` is a huge value and aborts). Integer literals take `usize` from context. Indexing an array or a slice aborts unless `i < len`. Slicing `x[lo..hi]` of an array or slice aborts unless `lo <= hi <= len` (so `x[len..len]` is a valid empty slice). The result's pointer is the base pointer advanced by `lo`; when `lo` is 0 it is the base pointer itself, so slicing an empty slice with a null pointer (`slice(null, 0)[..]`) is valid.
 
 ---

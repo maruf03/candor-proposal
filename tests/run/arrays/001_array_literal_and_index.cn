@@ -1,0 +1,8 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+pub fn main() -> i32 {
+let a: u8[3] = [10, 20, 30];
+    if (!(a[0] == 10)) { return 1; }
+    if (!(a[2] == 30)) { return 2; }
+    return 0;
+}

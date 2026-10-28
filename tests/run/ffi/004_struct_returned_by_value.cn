@@ -1,0 +1,11 @@
+// SPEC: 04-ffi §2
+// EXPECT: exit 0
+struct DivT { quot: i32; rem: i32; }
+extern "C" { fn div(a: i32, b: i32) -> DivT; }
+
+pub fn main() -> i32 {
+let r = div(7, 2);
+    if (!(r.quot == 3)) { return 1; }
+    if (!(r.rem == 1)) { return 2; }
+    return 0;
+}

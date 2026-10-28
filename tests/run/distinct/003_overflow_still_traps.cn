@@ -1,0 +1,8 @@
+// SPEC: 02-types §3.1
+// EXPECT: trap
+type Meters = distinct u32;
+fn big() -> Meters { return 4294967295; }
+
+pub fn main() -> i32 {
+let r = big() + 1;
+}

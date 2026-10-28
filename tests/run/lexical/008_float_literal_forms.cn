@@ -1,0 +1,9 @@
+// SPEC: 01-syntax §3
+// EXPECT: exit 0
+pub fn main() -> i32 {
+let a: f64 = 1e3;
+let b: f64 = 2.5e-1;
+    if (!(a == 1000.0)) { return 1; }
+    if (!(b == 0.25)) { return 2; }
+    return 0;
+}

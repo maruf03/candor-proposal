@@ -1,0 +1,10 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+struct P { x: i32; }
+fn f(a: P, b: P) -> bool { return a.x == b.x; }
+
+pub fn main() -> i32 {
+    let p = P{ x: 1 };
+    let r = f(p, p);
+    return 0;
+}

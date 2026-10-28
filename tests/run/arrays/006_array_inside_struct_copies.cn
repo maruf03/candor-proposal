@@ -1,0 +1,12 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+struct Row { c: u8[3]; }
+
+pub fn main() -> i32 {
+mut r = Row{ c: [1, 2, 3] };
+mut s = r;
+s.c[0] = 8;
+    if (!(r.c[0] == 1)) { return 1; }
+    if (!(s.c[0] == 8)) { return 2; }
+    return 0;
+}

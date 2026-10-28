@@ -1,0 +1,10 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut x: i32 = 5;
+let addr = &x as usize;
+let p = addr as (i32*);
+    if (!(*p == 5)) { return 1; }
+    if (!(addr != 0)) { return 2; }
+    return 0;
+}

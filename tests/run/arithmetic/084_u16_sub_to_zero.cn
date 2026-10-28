@@ -1,0 +1,8 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn sub(a: u16, b: u16) -> u16 { return a - b; }
+
+pub fn main() -> i32 {
+    if (sub(1, 1) != 0) { return 1; }
+    return 0;
+}

@@ -1,0 +1,10 @@
+// SPEC: 02-types §7
+// EXPECT: exit 0
+const N: usize = 3;
+
+pub fn main() -> i32 {
+let a: u8[N] = [1, 2, 3];
+    if (!(a[2] == 3)) { return 1; }
+    if (!(size_of(u8[N]) == 3)) { return 2; }
+    return 0;
+}

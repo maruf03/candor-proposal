@@ -1,0 +1,10 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+fn t(x: f64) -> u8 { return x as u8; }
+fn u(x: f64) -> i32 { return x as i32; }
+
+pub fn main() -> i32 {
+    if (!(t(-5.0) == 0)) { return 1; }
+    if (!(u(-1.0e20) == -2147483648)) { return 2; }
+    return 0;
+}

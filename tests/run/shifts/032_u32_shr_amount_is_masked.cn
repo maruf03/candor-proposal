@@ -1,0 +1,9 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn shl(a: u32, n: u32) -> u32 { return a << n; }
+fn shr(a: u32, n: u32) -> u32 { return a >> n; }
+
+pub fn main() -> i32 {
+    if (shr(4294967295, 33) != 2147483647) { return 1; }
+    return 0;
+}

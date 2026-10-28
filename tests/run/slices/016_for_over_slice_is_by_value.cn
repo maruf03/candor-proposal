@@ -1,0 +1,9 @@
+// SPEC: 01-syntax §2
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut a: u8[3] = [1, 2, 3];
+mut t: u32 = 0;
+for (x in a[..]) { t += x as u32; }
+    if (!(t == 6)) { return 1; }
+    return 0;
+}

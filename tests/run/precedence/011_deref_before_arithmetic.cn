@@ -1,0 +1,9 @@
+// SPEC: 01-syntax §4
+// EXPECT: exit 0
+pub fn main() -> i32 {
+mut v: i32 = 4;
+let p = &v;
+    if (!(*p + 1 == 5)) { return 1; }
+    if (!(*p * 2 == 8)) { return 2; }
+    return 0;
+}

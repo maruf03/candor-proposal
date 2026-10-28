@@ -1,0 +1,12 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+enum S : u8 { A, B }
+enum L : u64 { A, B }
+enum D { A, B }
+
+pub fn main() -> i32 {
+    if (!(size_of(S) == 1)) { return 1; }
+    if (!(size_of(L) == 8)) { return 2; }
+    if (!(size_of(D) == 4)) { return 3; }
+    return 0;
+}

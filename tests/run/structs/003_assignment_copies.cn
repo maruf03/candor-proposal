@@ -1,0 +1,12 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+struct P { x: i32; }
+
+pub fn main() -> i32 {
+mut a = P{ x: 1 };
+mut b = a;
+b.x = 5;
+    if (!(a.x == 1)) { return 1; }
+    if (!(b.x == 5)) { return 2; }
+    return 0;
+}

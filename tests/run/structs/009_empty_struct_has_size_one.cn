@@ -1,0 +1,8 @@
+// SPEC: 02-types §5
+// EXPECT: exit 0
+struct E { }
+
+pub fn main() -> i32 {
+    if (!(size_of(E) == 1)) { return 1; }
+    return 0;
+}

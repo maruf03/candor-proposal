@@ -1,0 +1,10 @@
+// SPEC: 01-syntax §5
+// EXPECT: exit 0
+struct S { x: i32; }
+impl S { pub fn get(self: S) -> i32 { return self.x; } }
+
+pub fn main() -> i32 {
+    let s = S{ x: 1 };
+    let r = s.get();
+    return 0;
+}

@@ -1,0 +1,12 @@
+// SPEC: 02-types §4
+// EXPECT: exit 0
+fn bump(p: i32*) -> i32 { *p = 10; return 2; }
+fn sum(a: i32, b: i32) -> i32 { return a + b; }
+
+pub fn main() -> i32 {
+mut x: i32 = 1;
+let r = sum(x, bump(&x));
+    if (!(r == 3)) { return 1; }
+    if (!(x == 10)) { return 2; }
+    return 0;
+}

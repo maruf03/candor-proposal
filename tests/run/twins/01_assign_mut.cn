@@ -1,0 +1,8 @@
+// SPEC: 01-syntax §2
+// EXPECT: exit 0
+fn f() { mut x: i32 = 1; x = 2; }
+
+pub fn main() -> i32 {
+    f();
+    return 0;
+}

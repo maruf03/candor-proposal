@@ -1,0 +1,10 @@
+// SPEC: 02-types §3.1
+// EXPECT: exit 0
+type Meters = distinct u32;
+type P = distinct u8*;
+
+pub fn main() -> i32 {
+    if (!(size_of(Meters) == 4)) { return 1; }
+    if (!(size_of(P) == size_of(usize))) { return 2; }
+    return 0;
+}

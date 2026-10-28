@@ -1,0 +1,9 @@
+// SPEC: 02-types §3
+// EXPECT: exit 0
+fn t(x: bool) -> u8 { return x as u8; }
+
+pub fn main() -> i32 {
+    if (!(t(true) == 1)) { return 1; }
+    if (!(t(false) == 0)) { return 2; }
+    return 0;
+}

@@ -1,0 +1,12 @@
+// SPEC: 02-types §3.1
+// EXPECT: exit 0
+type Meters = distinct u32;
+
+pub fn main() -> i32 {
+let m: Meters = 7;
+let raw = m as u32;
+let back = raw as Meters;
+    if (!(raw == 7)) { return 1; }
+    if (!(back == m)) { return 2; }
+    return 0;
+}
