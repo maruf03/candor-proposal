@@ -64,6 +64,7 @@ pub fn count_tokens(src: const u8[]) -> usize {
 }
 
 pub fn main() -> i32 {
-    if (count_tokens("let x = (a + 12) * b") != 9) { return 1; }
+    // `=` is not a token kind here: it lexes as Kind.Bad but is still counted.
+    if (count_tokens("let x = (a + 12) * b") != 10) { return 1; }
     return 0;
 }

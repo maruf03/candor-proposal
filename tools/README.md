@@ -10,3 +10,5 @@ python3 tools/run_tests.py spec/01-syntax.md       # litmus/ and tests/fail pars
 ```
 
 `ll1.py` treats `Ident`, `IntLit`, `FloatLit`, `StringLit`, `CharLit` as terminals (lexical classes). `kparse.py` only recognizes: it builds no AST and checks no semantics; its lexer follows `spec/01-syntax.md` §3 and reports malformed input as `FAIL`. Keep all of them green before changing the grammar.
+
+All four commands exit nonzero on failure (LL(1) conflicts, undefined nonterminals, keyword mismatch, unexpected test result), so they can gate CI directly. `kparse.py` and `run_tests.py` refuse to run on a grammar with conflicts.

@@ -78,7 +78,7 @@ Primitive and compound types, conversions, arithmetic, pointers and slices, enum
 
 ## 5. Structs, Enums, Arrays, Slices
 
-**Structs** use the platform C layout algorithm so they can cross into C unchanged: each field is placed at the next offset aligned to its natural alignment, and the total size is rounded up to the struct's alignment. Empty structs have size 1. Visibility (`pub`) never changes layout. Padding bytes are unspecified. Every struct literal names every field. Struct values are passed and returned by value with the C calling convention.
+**Structs** use the platform C layout algorithm so they can cross into C unchanged: each field is placed at the next offset aligned to its natural alignment, and the total size is rounded up to the struct's alignment. Empty structs have size 1 (the compiler adds one hidden byte; see `spec/06-compiler.md` §4), so they are not C-visible. Visibility (`pub`) never changes layout. Padding bytes are unspecified. Every struct literal names every field. Struct values are passed and returned by value with the C calling convention.
 
 **Enums** are fieldless. Variants are numbered from 0 unless given a value; the backing type defaults to `i32` (`enum E : u8 { ... }` chooses another). A `switch` over an enum must name every variant or have an `else:` arm. Each `case` arm is written `case .Variant:` or `case Enum.Variant:`. If an enum value outside its variants is observed, an exhaustive `switch` aborts.
 

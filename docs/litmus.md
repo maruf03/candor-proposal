@@ -18,6 +18,7 @@ Six programs that must parse today and compile once a compiler exists. They are 
 - **No struct equality or generic operators.** `01` passes `hash` and `eq` as function pointers, as in C's `qsort`.
 - **Bugs the independent review found in the programs**: `03` could overflow its DFS stack (nodes marked when popped, not when pushed); `06` dropped unsent bytes on a partial `send`. Both fixed; both are bugs the language will not catch.
 - **Review round 3:** `03` kept `seen` flags set, so a second traversal under-counted; it now resets them at the start. The kparse lexer accepted non-ASCII digits, spaces and char literals and crashed on `²`; fixed with explicit ASCII classes and four new syntax-fail tests.
+- **Review round 4:** `02` expected 9 tokens but `=` also counts (10); `ll1.py` printed conflicts yet exited 0, so every tool could pass on a conflicting grammar (now fixed, and the parser refuses such grammars); empty structs need a hidden byte in the C lowering (`spec/06-compiler.md` §4) and are not C-visible.
 - **Dangling is possible by design**: in `06`, `drop` frees `buf` and a stale `Conn` copy would dangle. The language will not stop it.
 
 ## Not tested

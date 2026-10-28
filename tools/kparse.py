@@ -43,7 +43,9 @@ def lex(src):
     out.append(("$","$")); return out
 
 def parse(src, gram):
-    ll1.analyze(gram); G,FIRST,FOLLOW,nullable,first_seq = ll1.TABLES
+    _, conflicts, _ = ll1.analyze(gram)
+    if conflicts: raise RuntimeError(f"grammar has {len(conflicts)} LL(1) conflict(s); run tools/ll1.py")
+    G,FIRST,FOLLOW,nullable,first_seq = ll1.TABLES
     toks = lex(src); pos=[0]
     def err(nt):
         k=toks[pos[0]]; ctx=" ".join(t[1] for t in toks[max(0,pos[0]-8):pos[0]+4])

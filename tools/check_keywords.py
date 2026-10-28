@@ -38,7 +38,9 @@ def main(path):
     lm = re.search(r"Literals \((\d+)\)", text)
     if not lm or int(lm.group(1)) != n_lit:
         print("MISMATCH: 'Literals (N)' label does not match", n_lit, "listed literals"); ok = False
-    G, _, _ = ll1.analyze(path)
+    G, conflicts, _ = ll1.analyze(path)
+    if conflicts:
+        print(f"FAILED: grammar has {len(conflicts)} LL(1) conflict(s); run tools/ll1.py"); return 1
     terms = {v for alts in G.values() for a in alts for k, v in a if k == "t" and re.fullmatch(r"[a-z_]+", v)}
     box = set(words) | set(lits)
     for label, a, b in (("grammar terminals", terms, box), ("kparse.KW", set(kparse.KW), box)):

@@ -50,7 +50,7 @@ Small by design, because nothing tracks ownership or aliasing (`spec/03-memory.m
 | slicing `a[lo..hi]` | `if (lo > hi \|\| hi > len) __builtin_trap();` (endpoints may equal `len`), then `{ lo == 0 ? base : base + lo, hi - lo }`: no pointer arithmetic when `lo` is 0, so a null base with length 0 never executes `NULL + 0` |
 | `T[]` / `const T[]` | `struct { T* ptr; size_t len; }` |
 | `T[N]` | `struct Arr_T_N { T v[N]; }`: a wrapper struct, so arrays can be passed and returned by value; `a[i]` is `a.v[i]` after the bounds check; `&a[0]` is `a.v` |
-| `struct` | C struct (same field order; C layout is the language rule) |
+| `struct` | C struct (same field order; C layout is the language rule). An empty struct gets one hidden `uint8_t _pad;` field, so `sizeof` is 1 and a following field lands at offset 1, as Kore requires (plain `struct Empty {}` is size 0 in clang) |
 | `enum` | the backing integer type, with `switch` default `__builtin_trap()` |
 | `defer` | cleanup code duplicated at each exit edge (or `goto` to a cleanup chain), LIFO |
 | `trap()` | `__builtin_trap()` |

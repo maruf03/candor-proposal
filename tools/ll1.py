@@ -121,3 +121,7 @@ if __name__ == "__main__":
     for A, toks, a, b in conflicts:
         base = A.split("~")[0]
         print(f"- in {A}: on {toks}\n    alt1: {fmt(a)}\n    alt2: {fmt(b)}")
+    LEXICAL = {"Ident", "IntLit", "FloatLit", "StringLit", "CharLit"}
+    bad = undefined - LEXICAL
+    if bad: print("undefined nonterminals that are not lexical classes:", sorted(bad))
+    sys.exit(1 if conflicts or bad else 0)
