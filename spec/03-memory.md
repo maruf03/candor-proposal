@@ -23,7 +23,7 @@ Kore manages memory the way C does: you allocate, you free, and nothing checks y
 
 ## 2. Pointers and Slices
 
-- `T*` is an address; `const T*` forbids writing through it. Any pointer may be `null`. `&x` makes a pointer to a variable, field or element.
+- `T*` is an address; `const T*` forbids writing through it. Any pointer may be `null`. `&x` makes a pointer to a variable, field or element. A pointer refers to **one** object: there is no pointer arithmetic or indexing (`spec/02-types.md` §4).
 - `T[]` is `{ptr, len}`: a pointer plus a length, bounds-checked on `[i]`. It owns nothing and may be copied, stored, and returned freely.
 - Local variables and arrays live in the frame of their function. A pointer or slice to one must not outlive the call, exactly as in C; nothing checks it.
 - Heap memory is raw `u8*` from an allocator, converted to the element type with `as` and given a length with `slice(p, n)`:

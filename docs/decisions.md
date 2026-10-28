@@ -44,11 +44,13 @@ History: the first specification (commit `3c61f4f`) was a memory-safe design wit
 ## Types and Arithmetic
 
 ### D-09: Arithmetic is defined
-**Approved (carried over).** `+ - *` abort on overflow in every build; `wrapping_add/sub/mul` wrap. `/ %` abort on zero and `MIN / -1`. Shifts mask the amount; `<<` acts on the bit pattern. Float to int saturates. Evaluation is left to right. The C lowering uses temporaries and unsigned shifts to deliver these (`spec/06-compiler.md` §4); an independent review found the first lowering plan did not.
+**Approved (carried over).** `+ - *` abort on overflow in every build; `wrapping_add/sub/mul` wrap. `/ %` abort on zero and `MIN / -1`. Shifts mask the amount; `<<` acts on the bit pattern. Float to int saturates. Evaluation is left to right. The C lowering uses explicit widening and temporaries to deliver these (`spec/06-compiler.md` §4); two independent reviews found holes in the first plans (signed shifts, argument order, C integer promotion, values read before a later side effect).
 - *Cost:* an overflow check on every `+`. Use `wrapping_*` where it matters.
 
-### D-10: Pointers: all nullable, arithmetic, casts anywhere
-**Default.** `T*` and `const T*`; `null` converts to any pointer; `p + n`, `p[i]`, `p - q`, `&x`; `as` between pointers and integers. No `?T*`, no `is_null`, no flow typing.
+### D-10: Pointers: nullable, single-object, casts anywhere
+**Author suggestion, approved.** `T*` and `const T*`; `null` converts to any pointer; `*p`, `p.f`, `&x`, `as` between pointers and integers. **No pointer arithmetic or indexing**: many objects are reached through slices (bounds-checked), `&s[i]` and `s[off..]` replace `p + i`, and `slice(p, n)` is the one unchecked entry. Address math goes through `usize`, where it wraps. No `?T*`, no `is_null`, no flow typing.
+- *Why:* none of the six litmus programs needed arithmetic on a bare pointer once slices were values; it removes the provenance and pointer-overflow questions an independent review raised (C's pointer rules vs wrapping) and makes the checked path the default. Zig's `*T` / `[*]T` split and Go's no-arithmetic are the precedents.
+- *Cost:* C buffers returned as bare `T*` need `slice(p, n)` once; sentinel strings need `slice(p, strlen(p))`.
 
 ### D-11: All types copy by value; no `Copy` marker, no `linear`
 **Follows from D-01.**

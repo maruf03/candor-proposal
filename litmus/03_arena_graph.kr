@@ -1,57 +1,57 @@
 // Litmus 3: a graph built from heap nodes that point at each other, with one
-// arena freed in a single call. Exercises: pointers stored in structs, self
-// referential types, pointer arithmetic, and a depth-first search with an explicit
-// stack. Nothing tracks lifetimes; the arena is freed in one call.
+// arena freed in a single call. Exercises: pointers stored in structs, slices over
+// malloc'd memory (no pointer arithmetic), self-referential types, and a
+// depth-first search with an explicit stack. Nothing tracks lifetimes.
 
 extern "C" {
     fn malloc(n: usize) -> u8*;
     fn free(p: u8*);
 }
 
-pub struct Node { id: u32; edges: Node**; n_edges: usize; seen: bool; }
+pub struct Node { id: u32; edges: Node*[]; n_edges: usize; seen: bool; }
 
-pub struct Graph { nodes: Node*; count: usize; edge_store: Node**; }
+pub struct Graph { nodes: Node[]; edge_store: Node*[]; }
 
 pub fn graph_new(count: usize) -> Graph {
-    let nodes = malloc(count * size_of(Node)) as (Node*);
-    let store = malloc(count * count * size_of(Node*)) as (Node**);
+    let nodes = slice(malloc(count * size_of(Node)) as (Node*), count);
+    let store = slice(malloc(count * count * size_of(Node*)) as (Node**), count * count);
     for (i in 0..count) {
-        let n = nodes + i;
-        n.id = i as u32;
-        n.edges = store + i * count;
-        n.n_edges = 0;
-        n.seen = false;
+        nodes[i] = Node{
+            id: i as u32, edges: store[i * count..(i + 1) * count], n_edges: 0, seen: false
+        };
     }
-    return Graph{ nodes: nodes, count: count, edge_store: store };
+    return Graph{ nodes: nodes, edge_store: store };
 }
 
 pub fn graph_free(g: Graph*) {
-    free(g.nodes as (u8*));
-    free(g.edge_store as (u8*));
+    free(g.nodes.ptr as (u8*));
+    free(g.edge_store.ptr as (u8*));
 }
 
 pub fn link(g: Graph*, a: usize, b: usize) {
-    let n = g.nodes + a;
-    n.edges[n.n_edges] = g.nodes + b;
+    let n = &g.nodes[a];
+    n.edges[n.n_edges] = &g.nodes[b];
     n.n_edges += 1;
 }
 
 pub fn reachable(g: Graph*, from: usize) -> usize {
-    let stack = malloc(g.count * size_of(Node*)) as (Node**);
-    defer free(stack as (u8*));
+    let stack = slice(malloc(g.nodes.len * size_of(Node*)) as (Node**), g.nodes.len);
+    defer free(stack.ptr as (u8*));
     mut top: usize = 0;
     mut found: usize = 0;
-    stack[0] = g.nodes + from;
+    // Mark on push, so each node is on the stack at most once (len entries suffice).
+    let root = &g.nodes[from];
+    root.seen = true;
+    stack[0] = root;
     top = 1;
     while (top > 0) {
         top -= 1;
         let n = stack[top];
-        if (n.seen) { continue; }
-        n.seen = true;
         found += 1;
         for (i in 0..n.n_edges) {
             let m = n.edges[i];
             if (!m.seen) {
+                m.seen = true;
                 stack[top] = m;
                 top += 1;
             }

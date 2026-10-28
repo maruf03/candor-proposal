@@ -39,20 +39,21 @@ Small by design, because nothing tracks ownership or aliasing (`spec/03-memory.m
 | :--- | :--- |
 | `i32`, `u64`, ... | `int32_t`, `uint64_t`, ... |
 | `+ - *` | `__builtin_add_overflow` family; on overflow `__builtin_trap()` |
-| `wrapping_*` | unsigned arithmetic, converted back |
+| `wrapping_*` | operands are cast explicitly to `uint32_t` (types of 32 bits or fewer) or `uint64_t`, the operation is done there, and the result is truncated back. C's integer promotion would otherwise turn two `uint16_t` into signed `int` and overflow (`65535 * 65535`) |
+| any arithmetic on types narrower than 32 bits | done in `int32_t`/`uint32_t` with explicit truncation of the result, never relying on C promotion |
 | `/ %` | explicit guards for zero and `MIN / -1`, then the C operator |
-| `<<` | mask the amount to `N - 1`; shift in the unsigned type of the same width, convert back (no signed-shift UB) |
+| `<<` | mask the amount to `N - 1`; shift in `uint32_t`/`uint64_t` (explicit widening for narrower types), truncate, convert back (no signed-shift UB) |
 | `>>` | mask the amount to `N - 1`; signed operands use C's arithmetic shift (clang and gcc define it), unsigned the logical one |
 | `as` | C casts for integers and pointers; saturating helper for float to int |
-| calls and operators with several operands | every operand and argument with side effects goes to a temporary in Kore's left-to-right order, because C leaves `f(g(), h())` unspecified |
-| array and slice index | `if (i >= len) __builtin_trap();` before every index and slice; pointer index is plain C |
+| calls and operators with several operands | **every operand's value is captured at its evaluation point.** If any later operand or argument has a side effect (a call, an assignment, a pointer write), all earlier non-constant operands are copied into temporaries first. `sum(x, bump(&x))` becomes `t1 = x; t2 = bump(&x); sum(t1, t2)`, because C leaves argument order unspecified. `&&` and `||` stay conditional: the right operand's temporaries are computed only inside the branch |
+| array and slice index | `if (i >= len) __builtin_trap();` before every index and slice |
 | `T[]` / `const T[]` | `struct { T* ptr; size_t len; }` |
+| `T[N]` | `struct Arr_T_N { T v[N]; }`: a wrapper struct, so arrays can be passed and returned by value; `a[i]` is `a.v[i]` after the bounds check; `&a[0]` is `a.v` |
 | `struct` | C struct (same field order; C layout is the language rule) |
 | `enum` | the backing integer type, with `switch` default `__builtin_trap()` |
 | `defer` | cleanup code duplicated at each exit edge (or `goto` to a cleanup chain), LIFO |
 | `trap()` | `__builtin_trap()` |
 | `slice(p, n)` | `(Slice_T){ p, n }` |
-| `p + n` | `p + n` (pointer arithmetic is C's) |
 | `extern "C"` import | a prototype with the platform C signature |
 
 The C the compiler emits never contains an operation with undefined behavior for arithmetic, shifts or array and slice bounds: all are guarded explicitly, so `-fwrapv` is not required (it may be added as defense in depth). Pointer dereferences are emitted as written; they are the program's responsibility.

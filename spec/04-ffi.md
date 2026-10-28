@@ -33,7 +33,7 @@ An `extern` block declares functions; it has no bodies. Names bind to the C symb
 Rules that follow:
 
 - **Allowed in a signature:** scalars, pointers, enums, structs (C layout, by value), and function pointers over those.
-- **Not allowed:** slices (`{ptr, len}` is not a C type: pass `s.ptr` and `s.len`) and arrays by value.
+- **Not allowed:** slices (`{ptr, len}` is not a C type: pass `s.ptr` and `s.len`), arrays by value, and any struct that contains a slice, directly or through nested structs or arrays. Array *fields* inside a struct are fine (C layout).
 - **Strings are not NUL-terminated.** Append the terminator yourself (`"path\0"`) and pass `.ptr`.
 - **C return conventions are yours to read.** `mmap` returns `MAP_FAILED`, `read` returns `-1` with `errno`. Check them where you call. `errno` has no accessor; import `__errno_location`.
 

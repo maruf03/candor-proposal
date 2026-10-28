@@ -69,10 +69,10 @@ Primitive and compound types, conversions, arithmetic, pointers and slices, enum
 - **Overflow aborts.** `+`, `-`, `*` and unary `-` abort on overflow at every width, signed and unsigned, in every build mode. For deliberate wraparound use `wrapping_add`, `wrapping_sub`, `wrapping_mul` (§8).
 - **Division.** `/` and `%` on integers abort when the divisor is `0`, and when a signed `MIN` is divided by `-1`, at every width. A constant zero divisor is a compile error. Float `/` is IEEE, never aborts.
 - **Shifts.** `<<` and `>>` convert the shift amount to the operand's type (truncating), then mask it to `N - 1` for an `N`-bit operand. `>>` is arithmetic for signed, logical for unsigned operands. `<<` operates on the bit pattern: it shifts the two's-complement representation and discards bits shifted out, never aborting, for signed operands too (`-1 << 1` is `-2`; `1_i8 << 7` is `-128`). A constant amount `>= N` is a compile error.
-- **Pointers** support C's operations, unchecked: `*p`, `p[i]` (same as `*(p + i)`), `p + n` and `p - n` (scaled by `size_of(T)`, wrapping modulo the address space), `p - q` (same type, result `isize`), comparison. `&x` is the address of a variable, field or element and has type `T*`; `&` of an rvalue is an error. `.` on a pointer to a struct reads or writes through it: `p.f` means `(*p).f`.
+- **Pointers** are single-object: `*p`, `p.f` (means `(*p).f`), `&x`, comparison with `==`/`!=` and `as`. There is **no pointer arithmetic and no pointer indexing**: `p + n`, `p - q` and `p[i]` are errors. To reach many objects, hold a **slice** (`T[]`) and index it (bounds-checked); `&s[i]` is the address of an element, `s[off..]` drops a prefix, and `slice(p, n)` is the single unchecked entry from a pointer to a slice. For address math (aligning, offsets), cast to `usize`, compute, and cast back; that arithmetic wraps like any integer. `&x` is the address of a variable, field or element and has type `T*`; `&` of an rvalue is an error.
 - **Comparison** is non-associative; operands must have the same type. Equality on structs and arrays is not defined (compare fields); scalars, enums and pointers compare with `==` and `!=`.
 - **Evaluation order** is left to right for operands and call arguments. `&&` and `||` short-circuit.
-- **Bounds.** Indexing an array or a slice aborts if the index is out of range. Slicing `x[lo..hi]` of an array or slice aborts unless `lo <= hi <= len`. Indexing through a **pointer** is never checked.
+- **Bounds.** Indexing an array or a slice aborts if the index is out of range. Slicing `x[lo..hi]` of an array or slice aborts unless `lo <= hi <= len`.
 
 ---
 
@@ -82,7 +82,7 @@ Primitive and compound types, conversions, arithmetic, pointers and slices, enum
 
 **Enums** are fieldless. Variants are numbered from 0 unless given a value; the backing type defaults to `i32` (`enum E : u8 { ... }` chooses another). A `switch` over an enum must name every variant or have an `else:` arm. Each `case` arm is written `case .Variant:` or `case Enum.Variant:`. If an enum value outside its variants is observed, an exhaustive `switch` aborts.
 
-**Arrays** `T[N]` are values: they live where declared and are copied on assignment. Literals are `[a, b, c]` and `[v; n]` (`v` repeated `n` times).
+**Arrays** `T[N]` are values: they live where declared and are copied on assignment, passed by value, and returned by value. Literals are `[a, b, c]` and `[v; n]` (`v` repeated `n` times). Unlike C, an array parameter never decays to a pointer; pass `&a[0]` or a slice for that. A `T[N]` field inside a struct has C layout. (Lowering: `spec/06-compiler.md` §4.)
 
 **Slices** `T[]` / `const T[]` are `{ptr, len}` values with fields `.ptr` (a pointer) and `.len` (`usize`). They are ordinary values: copy them, store them in structs, return them. Nothing tracks what they point at (a slice of a local array dangles after the function returns, as in C). Build one with `a[lo..hi]` (array or slice), `a[..]`, a string literal, or `slice(p, n)` (§8). String literals have type `const u8[]`; char literals have type `u8`.
 

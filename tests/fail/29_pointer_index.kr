@@ -1,0 +1,2 @@
+// ERROR: pointers cannot be indexed; index a slice (spec/02-types §4)
+fn f(p: u8*) -> u8 { return p[0]; }

@@ -1,0 +1,2 @@
+// ERROR: pointers have no arithmetic; index a slice or use slice(p, n) (spec/02-types §4)
+fn f(p: u8*) { let q = p + 1; }

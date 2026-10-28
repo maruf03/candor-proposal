@@ -2,6 +2,9 @@
 // heap buffer, driven by poll(2). Exercises: an array of structs that own
 // resources by convention, by-value C structs passed through an array pointer,
 // explicit release on every close path, and `defer` for the whole-server cleanup.
+// Limitation, on purpose: writes block (`write_all`), so one slow client can stall
+// the loop. A real server would keep a per-connection output queue and poll for
+// POLLOUT; that is the next program to write, not a language question.
 
 extern "C" {
     fn malloc(n: usize) -> u8*;
@@ -16,6 +19,16 @@ extern "C" {
 const MAX_CONNS: usize = 64;
 const BUF_SIZE: usize = 4096;
 const POLLIN: i16 = 1;
+
+fn write_all(fd: i32, buf: const u8[]) -> bool {
+    mut off: usize = 0;
+    while (off < buf.len) {
+        let w = send(fd, buf[off..].ptr, buf.len - off, 0x4000);
+        if (w <= 0) { return false; }
+        off += w as usize;
+    }
+    return true;
+}
 
 pub struct PollFd { fd: i32; events: i16; revents: i16; }
 
@@ -76,7 +89,7 @@ impl Server {
                 if (self.fds[i + 1].revents == 0) { continue; }
                 let c = &self.conns[i];
                 let n = read(c.fd, c.buf.ptr, c.buf.len);
-                if (n <= 0 || send(c.fd, c.buf.ptr, n as usize, 0x4000) <= 0) {
+                if (n <= 0 || !write_all(c.fd, c.buf[0..n as usize])) {
                     self.drop(i);
                 }
             }

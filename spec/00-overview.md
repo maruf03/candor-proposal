@@ -2,7 +2,7 @@
 
 **Kore** is a small, statically typed, ahead-of-time compiled systems language. It is C with the sharp edges filed off: the same structs, pointers and calling convention, with defined arithmetic, checked array and slice bounds, and mandatory initialization. There is no garbage collector, no borrow checker, no `unsafe`, and no built-in container. It gives you primitives, not policies.
 
-This is **draft 2 of the specification**. No compiler exists yet. The grammar is mechanically verified; the type rules are covered by 27 must-reject programs and six litmus programs (`docs/litmus.md`).
+This is **draft 2 of the specification**. No compiler exists yet. The grammar is mechanically verified; the type rules are covered by 29 must-reject programs and six litmus programs (`docs/litmus.md`).
 
 ---
 
@@ -52,7 +52,7 @@ You allocate and free memory yourself, with `malloc` or an allocator you write. 
 
 ## 5. Scope
 
-**In:** structs, fieldless enums, `impl`, generics, `defer`, `extern "C"` imports, directory modules with `pub`/`import`, `distinct`, `as`, arrays, slices, raw pointers with arithmetic, function pointers, C layout and ABI.
+**In:** structs, fieldless enums, `impl`, generics, `defer`, `extern "C"` imports, directory modules with `pub`/`import`, `distinct`, `as`, arrays, slices, single-object raw pointers, function pointers, C layout and ABI.
 
 **Deferred** (`docs/decisions.md` D-17, `deferred/`): ownership checking, `Result`/`try`, tagged unions, compiler directives, variadics and exports, mutable globals, concurrency, package manager, language server, LLVM backend.
 

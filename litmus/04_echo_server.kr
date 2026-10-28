@@ -1,6 +1,6 @@
 // Litmus 4: blocking TCP echo server. Exercises: extern "C" calls as plain calls
 // (no wrapper, no marker), errors as C-style return codes, `defer` in a loop,
-// slices passed to C as ptr + len, pointer arithmetic for partial writes.
+// slices passed to C as ptr + len, `buf[off..]` for partial writes.
 
 extern "C" {
     fn socket(domain: i32, kind: i32, proto: i32) -> i32;
@@ -18,7 +18,7 @@ pub enum NetError : i32 { Ok, Socket, Bind, Listen, Accept, Io }
 fn write_all(fd: i32, buf: const u8[]) -> bool {
     mut off: usize = 0;
     while (off < buf.len) {
-        let n = send(fd, buf.ptr + off, buf.len - off, 0x4000);
+        let n = send(fd, buf[off..].ptr, buf.len - off, 0x4000);
         if (n <= 0) { return false; }
         off += n as usize;
     }
