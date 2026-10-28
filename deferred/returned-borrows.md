@@ -1,4 +1,4 @@
-> **DEFERRED, NOT PART OF KORE.** Kore does not track borrows at all (`spec/03-memory.md` §1, `deferred/ownership-checking.md`). This note preserves a borrow design that was studied and rejected for size, in case an optional checker is ever built.
+> **DEFERRED, NOT PART OF CANDOR.** Candor does not track borrows at all (`spec/03-memory.md` §1, `deferred/ownership-checking.md`). This note preserves a borrow design that was studied and rejected for size, in case an optional checker is ever built.
 
 # Returned and Stored Borrows
 

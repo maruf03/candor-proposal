@@ -1,6 +1,6 @@
-# Kore 1: Syntax
+# Candor 1: Syntax
 
-Lexical structure, reserved words, operator precedence, and the formal grammar. The grammar in §6 is **mechanically verified**: `tools/ll1.py` reports 0 LL(1) conflicts, and `tools/kparse.py`, a predictive parser built from the same tables, parses every program in `litmus/` and `tests/`. It needs **no symbol table**: decisions that depend on what a name refers to (index versus generic application, field versus method, array length versus type argument) are made by semantic analysis.
+Lexical structure, reserved words, operator precedence, and the formal grammar. The grammar in §6 is **mechanically verified**: `tools/ll1.py` reports 0 LL(1) conflicts, and `tools/cnparse.py`, a predictive parser built from the same tables, parses every program in `litmus/` and `tests/`. It needs **no symbol table**: decisions that depend on what a name refers to (index versus generic application, field versus method, array length versus type argument) are made by semantic analysis.
 
 ---
 
@@ -9,17 +9,17 @@ Lexical structure, reserved words, operator precedence, and the formal grammar. 
 1. **Few words, few forms.** A reader should learn the whole surface in an afternoon. Every construct earns its place (see `docs/decisions.md`, D-03).
 2. **Keyword-led declarations.** Every top-level item and local binding starts with a keyword (`fn`, `struct`, `let`, ...), so the parser needs one token of lookahead and error recovery can resynchronize on keywords.
 3. **Explicit over implicit.** No operator overloading, no implicit numeric conversion, no truthiness, no hidden calls except `defer` and the two receiver conveniences of a method call (`spec/02-types.md` §5).
-4. **C is the model.** When a question has a C answer (pointers, layout, calling convention, by-value structs), Kore gives the C answer, except where C's answer is undefined behavior for arithmetic, bounds or initialization (`spec/02-types.md`).
+4. **C is the model.** When a question has a C answer (pointers, layout, calling convention, by-value structs), Candor gives the C answer, except where C's answer is undefined behavior for arithmetic, bounds or initialization (`spec/02-types.md`).
 
 ---
 
 ## 2. Reserved Words
 
-Kore reserves **25 keywords and 3 literal words (28 reserved words)**.
+Candor reserves **25 keywords and 3 literal words (28 reserved words)**.
 
 ```
 +--------------------------------------------------------------+
-|                  KORE RESERVED WORDS (25 + 3)                |
+|                CANDOR RESERVED WORDS (25 + 3)                |
 +------------------+------------------+------------------------+
 | Declarations(10) | Control Flow(10) | Other (5)              |
 +------------------+------------------+------------------------+
@@ -214,7 +214,7 @@ ExprList        = Expr [ "," [ ExprList ] ] ;
 
 ```bash
 python3 tools/ll1.py spec/01-syntax.md                       # conflicts: 0
-python3 tools/kparse.py spec/01-syntax.md litmus/*.kr tests/fail/*.kr
+python3 tools/cnparse.py spec/01-syntax.md litmus/*.cn tests/fail/*.cn
 python3 tools/check_keywords.py spec/01-syntax.md            # box, grammar, parser agree
 ```
 

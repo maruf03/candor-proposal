@@ -1,12 +1,12 @@
-# Kore 3: Memory
+# Candor 3: Memory
 
-Kore manages memory the way C does: you allocate, you free, and nothing checks you. The language adds three things on top: **defined arithmetic and bounds**, **mandatory initialization**, and **`defer`** for cleanup. It gives you the primitives to build allocators and containers; it does not provide them.
+Candor manages memory the way C does: you allocate, you free, and nothing checks you. The language adds three things on top: **defined arithmetic and bounds**, **mandatory initialization**, and **`defer`** for cleanup. It gives you the primitives to build allocators and containers; it does not provide them.
 
 ---
 
 ## 1. What Is and Is Not Guaranteed
 
-| Class of bug | Kore |
+| Class of bug | Candor |
 | :--- | :--- |
 | integer overflow, bad division, bad shifts | defined: abort or specified result (`spec/02-types.md` §4) |
 | out-of-bounds index on an array or slice | aborts |
@@ -15,7 +15,7 @@ Kore manages memory the way C does: you allocate, you free, and nothing checks y
 | null or dangling pointer dereference | **not guaranteed**: same as C |
 | out-of-bounds access through a raw pointer | **not guaranteed** |
 | use after free, double free, leak | **not guaranteed** |
-| aliasing, data races | **not guaranteed**; Kore is single-threaded for now |
+| aliasing, data races | **not guaranteed**; Candor is single-threaded for now |
 
 **There is no `unsafe` marker** because there is no safe subset to opt out of: pointers, casts and C calls are ordinary operations. The emitted C is compiled with `-fno-strict-aliasing`, so reinterpreting memory through different pointer types behaves like the machine, but an optimizer may still assume no null dereference and no out-of-bounds access. Tools (a debug allocator, sanitizer builds) are the intended safety net, not the type system.
 
@@ -49,7 +49,7 @@ struct Alloc {
 }
 ```
 
-Containers (`Vec[T]`, arenas, maps) are library code over an `Alloc` and a slice (`litmus/05_allocator_vec.kr`). Nothing in the language needs to know about them.
+Containers (`Vec[T]`, arenas, maps) are library code over an `Alloc` and a slice (`litmus/05_allocator_vec.cn`). Nothing in the language needs to know about them.
 
 ---
 

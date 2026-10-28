@@ -1,4 +1,4 @@
-# Kore 5: Modules
+# Candor 5: Modules
 
 One directory is one module. There are no header files, no forward declarations, and no build scripts.
 
@@ -6,7 +6,7 @@ One directory is one module. There are no header files, no forward declarations,
 
 ## 1. Directory = Module
 
-Every directory containing `.kr` files is a module named after the directory (`src/net/http/*.kr` is module `http`). All files in a directory share one scope: they can use each other's private declarations in any order, with no `import` between them.
+Every directory containing `.cn` files is a module named after the directory (`src/net/http/*.cn` is module `http`). All files in a directory share one scope: they can use each other's private declarations in any order, with no `import` between them.
 
 A program is a root directory containing `fn main() -> i32`, whose return value is the process exit code.
 
@@ -46,4 +46,4 @@ Compilation of a module is two passes: (1) parse all files and register every ty
 
 ## 5. Building
 
-The compiler builds a directory: `kore build <dir> -o <binary> [--link name]...`, where each `--link` passes `-l<name>` to the C linker. There is no package manager, registry, lock file, manifest, or precompiled-package format in v1; they are deferred (`deferred/packages-and-lsp.md`).
+The compiler builds a directory: `candor build <dir> -o <binary> [--link name]...`, where each `--link` passes `-l<name>` to the C linker. There is no package manager, registry, lock file, manifest, or precompiled-package format in v1; they are deferred (`deferred/packages-and-lsp.md`).

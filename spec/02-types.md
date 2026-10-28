@@ -1,4 +1,4 @@
-# Kore 2: Types and Semantics
+# Candor 2: Types and Semantics
 
 Primitive and compound types, conversions, arithmetic, pointers and slices, enums, generics, constants, and the prelude. Memory conventions (allocation, `defer`, initialization) are in `spec/03-memory.md`.
 
@@ -92,7 +92,7 @@ Primitive and compound types, conversions, arithmetic, pointers and slices, enum
 
 ## 6. Generics
 
-Type parameters are written `[T]`. Generic structs, functions, aliases and `impl` blocks are **monomorphized**: one copy per distinct argument list, with no runtime cost. A generic *body* is checked at each instantiation, like a C++ template; an error carries the instantiation site. Without traits, a generic cannot use operators on `T` unless every instantiation supports them; pass comparison and hashing as function pointers when a body must stay type-agnostic (`litmus/01_hashmap.kr`).
+Type parameters are written `[T]`. Generic structs, functions, aliases and `impl` blocks are **monomorphized**: one copy per distinct argument list, with no runtime cost. A generic *body* is checked at each instantiation, like a C++ template; an error carries the instantiation site. Without traits, a generic cannot use operators on `T` unless every instantiation supports them; pass comparison and hashing as function pointers when a body must stay type-agnostic (`litmus/01_hashmap.cn`).
 
 ---
 
@@ -112,4 +112,4 @@ These names are available everywhere without `import`. They are ordinary identif
 | `trap()` | never returns | abort |
 | `wrapping_add/sub/mul(a, b)` | `(T, T) -> T` | `T` an integer type; wraps modulo 2^N |
 
-There is no allocator, container, string, or error type in the prelude. Allocation is an ordinary `extern "C"` call (`malloc`, `free`) or a user-written allocator (`spec/03-memory.md` §3, `litmus/05_allocator_vec.kr`).
+There is no allocator, container, string, or error type in the prelude. Allocation is an ordinary `extern "C"` call (`malloc`, `free`) or a user-written allocator (`spec/03-memory.md` §3, `litmus/05_allocator_vec.cn`).

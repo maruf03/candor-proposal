@@ -1,4 +1,4 @@
-# Kore Decision Log
+# Candor Decision Log
 
 One entry per decision: what was chosen, what else was considered, what it costs. **Provenance**: **Author** (the language's author chose it), **Approved** (proposed, then approved), **Default** (a call made without an explicit answer; reverse it freely). Entries marked *taste call* have no technical argument either way.
 
@@ -8,7 +8,7 @@ History: the first specification (commit `3c61f4f`) was a memory-safe design wit
 
 ## Direction
 
-### D-01: Kore is C with defined arithmetic, not a safe language
+### D-01: Candor is C with defined arithmetic, not a safe language
 **Author.** No garbage collector, no borrow checker, no hidden machinery. The language provides **zero-overhead primitives** from which a programmer builds whatever memory management they want, the way C lets you build objects without having OOP. Use after free, leaks, dangling pointers and aliasing are the programmer's problem; the language fixes the *arithmetic and bounds* class of bugs and the *uninitialized variable* class, because those cost almost nothing.
 - *Why:* the previous design drifted toward Rust: a smaller borrow checker is still a borrow checker, and it forced a compiler-known container (`Buf`), a `Copy` marker and an `unsafe` boundary just to be consistent.
 - *Closest neighbours:* C, Zig, Odin, Hare.
@@ -25,7 +25,7 @@ History: the first specification (commit `3c61f4f`) was a memory-safe design wit
 ## Memory
 
 ### D-04: Slices are plain `{ptr, len}` values
-**Default.** Copyable, storable, returnable; bounds-checked on index, unchecked about lifetime. This removes the need for any built-in container: a library `Vec[T]` is a slice plus a length (`litmus/05_allocator_vec.kr`).
+**Default.** Copyable, storable, returnable; bounds-checked on index, unchecked about lifetime. This removes the need for any built-in container: a library `Vec[T]` is a slice plus a length (`litmus/05_allocator_vec.cn`).
 
 ### D-05: No built-in allocator or container
 **Author.** `malloc`/`free` are ordinary `extern "C"` calls; allocators are user structs of function pointers passed explicitly. The prelude holds only what the language cannot express itself: `slice`, `trap`, `wrapping_*`; `size_of(T)` is a keyword form. `align_of` is deferred until alignment directives exist (D-03).

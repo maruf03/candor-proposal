@@ -1,10 +1,10 @@
-> **DEFERRED, NOT PART OF KORE.** Draft LLVM IR lowering, DWARF, and PGO notes. v1 emits C instead (`spec/06-compiler.md`). Several claims here are known to be wrong or unverified (error-union register assignment is not the C ABI, `perf script | pprof` needs a converter, frame-pointer cost is understated).
+> **DEFERRED, NOT PART OF CANDOR.** Draft LLVM IR lowering, DWARF, and PGO notes. v1 emits C instead (`spec/06-compiler.md`). Several claims here are known to be wrong or unverified (error-union register assignment is not the C ABI, `perf script | pprof` needs a converter, frame-pointer cost is understated).
 > References to "RFC 000N", `DESIGN_REVIEW*.md`, and `DECISIONS.md` point to v0.3 documents recoverable from git (snapshot commit `1f54205`). Code samples use draft syntax and are not guaranteed to parse or typecheck against `spec/`. Kept for the ideas; see `docs/decisions.md` D-21 for when this returns.
 
-# RFC 0005: Reference Compiler Architecture (`korec`), LLVM IR Lowering, and Zero-Overhead Observability
+# RFC 0005: Reference Compiler Architecture (`candorc`), LLVM IR Lowering, and Zero-Overhead Observability
 
 - **RFC Number:** 0005
-- **Title:** Reference Compiler Architecture (`korec`), LLVM IR Lowering, and Zero-Overhead Observability
+- **Title:** Reference Compiler Architecture (`candorc`), LLVM IR Lowering, and Zero-Overhead Observability
 - **Author:** Language Design Working Group
 - **Status:** Draft (status and keyword count corrected 2026-10-28; **§5.2 ABI lowering and §3 implementation-language choice are under review**, see `DECISIONS.md` D-017 and `DESIGN_REVIEW.md` section C)
 - **Type:** Standards Track (Compiler Backend & Observability)
@@ -14,16 +14,16 @@
 
 ## 1. Abstract
 
-This RFC specifies the internal architecture of the Kore reference compiler (`korec`), including frontend AST data structures, the on-demand generic monomorphizer, the Control Flow Graph (CFG) verifier for `linear` resources, exact Kore-to-LLVM-IR lowering templates, zero-overhead hardware profiling (`perf` / `pprof` via DWARF v5 and frame pointers), and two-phase Profile-Guided Optimization (PGO).
+This RFC specifies the internal architecture of the Candor reference compiler (`candorc`), including frontend AST data structures, the on-demand generic monomorphizer, the Control Flow Graph (CFG) verifier for `linear` resources, exact Candor-to-LLVM-IR lowering templates, zero-overhead hardware profiling (`perf` / `pprof` via DWARF v5 and frame pointers), and two-phase Profile-Guided Optimization (PGO).
 
 ---
 
 ## 2. Five-Stage Compiler Pipeline
 
-`korec` is structured as a modular 5-stage pipeline where stages 1–3 are shared between batch compilation (`kore build`) and the interactive Language Server (`kore lsp`):
+`candorc` is structured as a modular 5-stage pipeline where stages 1–3 are shared between batch compilation (`candor build`) and the interactive Language Server (`candor lsp`):
 
 ```
-[ Source Files (*.kr) & Precompiled Stubs (api.kr.d) ]
+[ Source Files (*.cn) & Precompiled Stubs (api.cn.d) ]
                          |
                          v
 +--------------------------------------------------------+
@@ -51,7 +51,7 @@ This RFC specifies the internal architecture of the Kore reference compiler (`ko
                          v
 +--------------------------------------------------------+
 | Stage 4: LLVM IR Lowering & Instrumentation            |
-|  - Struct layout, Kore and C calling conventions       |
+|  - Struct layout, Candor and C calling conventions       |
 |  - LIFO 'defer'/'errdefer' expansion, definite init    |
 |   - DWARF v5 debug info + PGO counter injection        |
 +--------------------------------------------------------+
@@ -68,7 +68,7 @@ This RFC specifies the internal architecture of the Kore reference compiler (`ko
 
 ## 3. Core Frontend Data Structures (Illustrative; implementation language undecided)
 
-Implementing `korec` in Go keeps the compiler codebase concise, strongly typed, and easy to maintain:
+Implementing `candorc` in Go keeps the compiler codebase concise, strongly typed, and easy to maintain:
 
 ```go
 package ast
@@ -121,7 +121,7 @@ type FnDecl struct {
 
 ## 4. On-Demand Generic Monomorphization Algorithm
 
-Kore avoids both runtime boxing (Java/C# reference generics) and Turing-complete compile-time evaluation (Zig/C++ template metaprogramming). Generics are lowered via deterministic AST template instantiation:
+Candor avoids both runtime boxing (Java/C# reference generics) and Turing-complete compile-time evaluation (Zig/C++ template metaprogramming). Generics are lowered via deterministic AST template instantiation:
 
 1. **Template Registration:** During Pass 2a, any `struct`, `impl`, or `fn` with a non-empty `TypeParams` slice (`[T, U]`) is stored in the `GenericTemplateTable` without generating LLVM IR.
 2. **Instantiation Key Hashing:** When Pass 2b encounters a concrete instantiation such as `RingQueue[PacketHeader]`, it constructs a canonical mangled key: `_K9RingQueue_I12PacketHeaderE`.
@@ -138,7 +138,7 @@ Kore avoids both runtime boxing (Java/C# reference generics) and Turing-complete
 To guarantee zero Undefined Behavior (RFC 0001), every local is initialized at its declaration (RFC 0003 Rule 5; there is no implicit zero-fill), and integer arithmetic omits LLVM's `nsw`/`nuw` poison flags:
 
 ```rust
-// Kore Source:
+// Candor Source:
 pub fn accumulate(items: const i32[]) -> i32 {
     mut sum: i32 = 0;
     for (x in items) {
@@ -186,12 +186,12 @@ attributes #0 = { nounwind "frame-pointer"="all" }
 
 ### 5.2 Register-Pair Error Unions (`Result[T, E]`) and LIFO `defer` Expansion
 
-> **Under review (D-017).** The `{ i64, i32 }` register assignment below is an illustration of a *Kore-internal* convention, not the platform C ABI: it does not match SysV for mixed int/float payloads, returns no sret pointer in `RAX`, and does not apply on Windows x64. The sample IR is also missing `attributes #0` and `declare i32 @close(i32)`, so it would not pass `llvm-as` as written.
+> **Under review (D-017).** The `{ i64, i32 }` register assignment below is an illustration of a *Candor-internal* convention, not the platform C ABI: it does not match SysV for mixed int/float payloads, returns no sret pointer in `RAX`, and does not apply on Windows x64. The sample IR is also missing `attributes #0` and `declare i32 @close(i32)`, so it would not pass `llvm-as` as written.
 
 Error unions where `sizeof(T) <= 8` map directly to two hardware registers (`RAX` for payload, `RDX` for error tag), and `defer` statements are expanded inline at each scope exit block without C++ `.eh_frame` unwind tables:
 
 ```rust
-// Kore Source:
+// Candor Source:
 pub fn process_fd(raw_fd: i32) -> Result[u64, SysError] {
     defer close(raw_fd);
     if (raw_fd < 0) {
@@ -230,25 +230,25 @@ attributes #0 = { nounwind "frame-pointer"="all" }
 ## 6. Zero-Overhead Observability (`perf` / `pprof`) & LLVM PGO
 
 ### 6.1 Zero-Overhead Hardware Profiling
-Because Kore has no garbage collector or virtual machine, it achieves 100% compatibility with OS kernel sampling profilers (`Linux perf`, `macOS Instruments`, `eBPF profile`) and `pprof` flamegraphs with **zero runtime instrumentation overhead**:
+Because Candor has no garbage collector or virtual machine, it achieves 100% compatibility with OS kernel sampling profilers (`Linux perf`, `macOS Instruments`, `eBPF profile`) and `pprof` flamegraphs with **zero runtime instrumentation overhead**:
 
-1. **Frame Pointer Preservation:** `korec` sets the LLVM function attribute `"frame-pointer"="all"` on all generated functions. Every function prologue emits `push rbp; mov rbp, rsp` (3 bytes, $< 0.5\%$ execution impact), allowing hardware PMU interrupts to unwind the call stack in $O(\text{depth})$ kernel time without reading DWARF unwind tables.
-2. **DWARF v5 Debug Tables:** `korec` drives `llvm::DIBuilder` to emit `DICompileUnit`, `DISubprogram`, `DILocalVariable`, and exact line/column locations (`DILocation`), enabling line-by-line CPU and memory attribution in `pprof` and `gdb`/`lldb`.
+1. **Frame Pointer Preservation:** `candorc` sets the LLVM function attribute `"frame-pointer"="all"` on all generated functions. Every function prologue emits `push rbp; mov rbp, rsp` (3 bytes, $< 0.5\%$ execution impact), allowing hardware PMU interrupts to unwind the call stack in $O(\text{depth})$ kernel time without reading DWARF unwind tables.
+2. **DWARF v5 Debug Tables:** `candorc` drives `llvm::DIBuilder` to emit `DICompileUnit`, `DISubprogram`, `DILocalVariable`, and exact line/column locations (`DILocation`), enabling line-by-line CPU and memory attribution in `pprof` and `gdb`/`lldb`.
 
 ```bash
 # Zero-overhead production profiling workflow:
-$ kore build --release
+$ candor build --release
 $ perf record -F 999 -g -- ./bin/app
 $ perf script | pprof -http=:8080 -
 ```
 
 ### 6.2 Two-Phase Profile-Guided Optimization (PGO)
-`korec` exposes LLVM's native Instrumentation PGO pipeline directly via CLI flags:
+`candorc` exposes LLVM's native Instrumentation PGO pipeline directly via CLI flags:
 
-1. **Instrumentation Build (`kore build --pgo-gen`):**
+1. **Instrumentation Build (`candor build --pgo-gen`):**
    * Inserts `@llvm.instrprof.increment` intrinsics along CFG edges.
    * Links `libclang_rt.profile` to write execution counts to `default.profraw` at process exit.
-2. **Profile Merging & Optimized Build (`kore build --pgo-use=app.profdata`):**
+2. **Profile Merging & Optimized Build (`candor build --pgo-use=app.profdata`):**
    * Invokes `llvm-profdata merge -output=app.profdata default.profraw`.
    * Runs LLVM's `PGOInstrumentationUse` pass, annotating branch instructions with `!prof !{!"branch_weights", i32 2000, i32 1}` metadata.
    * Unlocks aggressive hot-path inlining, cold error-block outlining (moving `catch` blocks out of L1 instruction cache lines), and loop vectorization.

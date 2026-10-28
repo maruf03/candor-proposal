@@ -1,6 +1,6 @@
-# Kore 0: Overview
+# Candor 0: Overview
 
-**Kore** is a small, statically typed, ahead-of-time compiled systems language. It is C with the sharp edges filed off: the same structs, pointers and calling convention, with defined arithmetic, checked array and slice bounds, and mandatory initialization. There is no garbage collector, no borrow checker, no `unsafe`, and no built-in container. It gives you primitives, not policies.
+**Candor** is a small, statically typed, ahead-of-time compiled systems language. It is C with the sharp edges filed off: the same structs, pointers and calling convention, with defined arithmetic, checked array and slice bounds, and mandatory initialization. There is no garbage collector, no borrow checker, no `unsafe`, and no built-in container. It gives you primitives, not policies.
 
 This is **draft 2 of the specification**. No compiler exists yet. The grammar is mechanically verified; the type rules are covered by 29 must-reject programs and six litmus programs (`docs/litmus.md`).
 
@@ -27,7 +27,7 @@ pub fn main() -> i32 {
 ## 2. Principles
 
 1. **Small.** 25 keywords and 3 literals. No traits, closures, macros, operator overloading, ownership tracking, or built-in containers. A new feature must be required by a program that cannot be written without it (`docs/decisions.md`, D-03).
-2. **C is the model.** Structs have C layout, functions have the C ABI, pointers are addresses, and calling C is a plain call. Where a question has a C answer, Kore gives it.
+2. **C is the model.** Structs have C layout, functions have the C ABI, pointers are addresses, and calling C is a plain call. Where a question has a C answer, Candor gives it.
 3. **Defined where it is cheap.** Overflow aborts, division and shifts are specified, arrays and slices are bounds-checked, and nothing is uninitialized. Pointer misuse is not defended against (`spec/03-memory.md` §1).
 4. **Explicit.** No implicit numeric conversion, no truthiness, no hidden calls beyond `defer` and the receiver conveniences of a method call.
 5. **Primitives, not policies.** Pointers, `slice(p, n)`, `size_of`, casts and function pointers are enough to write an allocator, a vector, an arena or a hash map as library code.
@@ -43,7 +43,7 @@ You allocate and free memory yourself, with `malloc` or an allocator you write. 
 ## 4. What You Give Up (Honest Trade-offs)
 
 - **No memory safety guarantees.** Use after free, double free, leaks and dangling pointers are possible. This is the price of the model above.
-- **No traits.** Generic code cannot hash, compare, or use operators on `T`; pass function pointers (`litmus/01_hashmap.kr`).
+- **No traits.** Generic code cannot hash, compare, or use operators on `T`; pass function pointers (`litmus/01_hashmap.cn`).
 - **No tagged unions, tuples, closures, or pattern matching.** Errors are plain return values.
 - **Single-threaded.** No threads or atomics yet.
 - **No globals, variadics, or exported functions yet** (`docs/decisions.md`, D-17).

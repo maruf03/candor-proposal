@@ -1,4 +1,4 @@
-> **DEFERRED, NOT PART OF KORE.** Kore is a C-like language: it does not check ownership or aliasing (`docs/decisions.md`, D-01). This note records what was designed and removed, so it can come back as an optional tool if wanted. The full text is in commit `3c61f4f` (`spec/03-memory.md`, `spec/02-types.md`, `docs/decisions.md` D-01 to D-18).
+> **DEFERRED, NOT PART OF CANDOR.** Candor is a C-like language: it does not check ownership or aliasing (`docs/decisions.md`, D-01). This note records what was designed and removed, so it can come back as an optional tool if wanted. The full text is in commit `3c61f4f` (`spec/03-memory.md`, `spec/02-types.md`, `docs/decisions.md` D-01 to D-18).
 
 # Ownership Checking (removed)
 
@@ -16,4 +16,4 @@ The author wanted a small language closer to C than to Rust: no borrow checker, 
 
 ## Re-entry criteria
 
-Bring a checker back only as an **optional, separate analysis** (a lint or a `kore check --strict` pass) over the same language, never as something the syntax must express. Design notes that carry over: borrows must activate after value arguments; a linear checker must lower `defer` into the CFG before checking; returned-borrow designs are in `returned-borrows.md`.
+Bring a checker back only as an **optional, separate analysis** (a lint or a `candor check --strict` pass) over the same language, never as something the syntax must express. Design notes that carry over: borrows must activate after value arguments; a linear checker must lower `defer` into the CFG before checking; returned-borrow designs are in `returned-borrows.md`.

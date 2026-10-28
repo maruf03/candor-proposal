@@ -1,15 +1,15 @@
 """Check that the reserved-word list agrees in all three places:
    1. the box in RFC 0002 section 2 (with its per-column counts and the stated total),
    2. the alphabetic terminals of the EBNF grammar in RFC 0002 section 6,
-   3. the KW set in tools/kparse.py.
+   3. the KW set in tools/cnparse.py.
 Usage: python3 tools/check_keywords.py rfc_0002_lexical_specification_and_formal_ll_1_grammar.md
 Exits non-zero on any mismatch."""
 import re, sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import ll1, kparse
+import ll1, cnparse
 
 def box_words(text):
-    box = text.split("KORE RESERVED WORDS")[1].split("```")[0]
+    box = text.split("CANDOR RESERVED WORDS")[1].split("```")[0]
     rows = [r for r in box.splitlines() if r.startswith("|") and not r.startswith("+")]
     header = [c.strip() for c in rows[0].strip("|").split("|")]
     declared = {h: int(re.search(r"\((\d+)\)", h).group(1)) for h in header}
@@ -43,10 +43,10 @@ def main(path):
         print(f"FAILED: grammar has {len(conflicts)} LL(1) conflict(s); run tools/ll1.py"); return 1
     terms = {v for alts in G.values() for a in alts for k, v in a if k == "t" and re.fullmatch(r"[a-z_]+", v)}
     box = set(words) | set(lits)
-    for label, a, b in (("grammar terminals", terms, box), ("kparse.KW", set(kparse.KW), box)):
+    for label, a, b in (("grammar terminals", terms, box), ("cnparse.KW", set(cnparse.KW), box)):
         if a != b:
             print(f"MISMATCH {label} vs box: only in {label}: {sorted(a-b)}; only in box: {sorted(b-a)}"); ok = False
-    print("OK: box, grammar and kparse agree" if ok else "FAILED")
+    print("OK: box, grammar and cnparse agree" if ok else "FAILED")
     return 0 if ok else 1
 
 if __name__ == "__main__":

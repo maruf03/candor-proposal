@@ -1,6 +1,6 @@
-# Kore 6: Compiler Plan
+# Candor 6: Compiler Plan
 
-How to build a Kore compiler. This chapter is a plan, not a language rule: nothing here constrains programs. Status: **no compiler exists yet**; the grammar has tools (`tools/`), everything else is specification.
+How to build a Candor compiler. This chapter is a plan, not a language rule: nothing here constrains programs. Status: **no compiler exists yet**; the grammar has tools (`tools/`), everything else is specification.
 
 ---
 
@@ -16,7 +16,7 @@ How to build a Kore compiler. This chapter is a plan, not a language rule: nothi
 ## 2. Pipeline
 
 ```
- .kr files
+ .cn files
     │  1. lex + parse (per file)                  → AST, syntax errors
     │  2. modules: collect, resolve imports       → module graph (DAG check)
     │  3. declarations: types, layouts, signatures
@@ -27,7 +27,7 @@ How to build a Kore compiler. This chapter is a plan, not a language rule: nothi
     │  7. clang -O2 -fno-strict-aliasing          → native binary (+ sanitizer builds for tests)
 ```
 
-Stages 1-4 are shared by `kore build` and any future language server.
+Stages 1-4 are shared by `candor build` and any future language server.
 
 ## 3. Checks That Exist
 
@@ -35,7 +35,7 @@ Small by design, because nothing tracks ownership or aliasing (`spec/03-memory.m
 
 ## 4. Lowering to C
 
-| Kore | C |
+| Candor | C |
 | :--- | :--- |
 | `i32`, `u64`, ... | `int32_t`, `uint64_t`, ... |
 | `+ - *` | `__builtin_add_overflow` family; on overflow `__builtin_trap()` |
@@ -50,7 +50,7 @@ Small by design, because nothing tracks ownership or aliasing (`spec/03-memory.m
 | slicing `a[lo..hi]` | `if (lo > hi \|\| hi > len) __builtin_trap();` (endpoints may equal `len`), then `{ lo == 0 ? base : base + lo, hi - lo }`: no pointer arithmetic when `lo` is 0, so a null base with length 0 never executes `NULL + 0` |
 | `T[]` / `const T[]` | `struct { T* ptr; size_t len; }` |
 | `T[N]` | `struct Arr_T_N { T v[N]; }`: a wrapper struct, so arrays can be passed and returned by value; `a[i]` is `a.v[i]` after the bounds check; `&a[0]` is `a.v` |
-| `struct` | C struct (same field order; C layout is the language rule). An empty struct gets one hidden `uint8_t _pad;` field, so `sizeof` is 1 and a following field lands at offset 1, as Kore requires (plain `struct Empty {}` is size 0 in clang) |
+| `struct` | C struct (same field order; C layout is the language rule). An empty struct gets one hidden `uint8_t _pad;` field, so `sizeof` is 1 and a following field lands at offset 1, as Candor requires (plain `struct Empty {}` is size 0 in clang) |
 | `enum` | the backing integer type, with `switch` default `__builtin_trap()` |
 | `defer` | cleanup code duplicated at each exit edge (or `goto` to a cleanup chain), LIFO |
 | `trap()` | `__builtin_trap()` |
@@ -76,9 +76,9 @@ With no ownership analysis, the type checker is the whole front end, so a workin
 
 | Suite | Location | Expectation |
 | :--- | :--- | :--- |
-| accept | `litmus/*.kr` | compiles, runs, correct output |
-| compile-fail | `tests/fail/*.kr` | rejected; the diagnostic mentions the rule named on the first line (`// ERROR: ...`) |
-| syntax-fail | `tests/syntax_fail/*.kr` | rejected by the parser |
+| accept | `litmus/*.cn` | compiles, runs, correct output |
+| compile-fail | `tests/fail/*.cn` | rejected; the diagnostic mentions the rule named on the first line (`// ERROR: ...`) |
+| syntax-fail | `tests/syntax_fail/*.cn` | rejected by the parser |
 | grammar | `tools/ll1.py`, `tools/check_keywords.py` | 0 conflicts, keyword lists agree |
 | emitted C | all accepted programs, built with UBSan | no report from arithmetic, shift or bounds checks |
 
